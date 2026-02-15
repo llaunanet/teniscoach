@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Tennis Coach Pro</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d84818",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211511",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Lexend', sans-serif;
+            min-height: 100dvh;
+        }
+
+        .page-container {
+            display: none;
+        }
+
+        .page-container.active {
+            display: block;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .font-fill-1 {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-[#1b110e] antialiased">
+    <div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl bg-white overflow-hidden">
+
+        <!-- DASHBOARD PAGE -->
+        <div id="dashboard-page" class="page-container active flex flex-col h-full overflow-hidden">
+            <header class="flex items-center bg-background-light p-4 pb-2 justify-between shrink-0">
+                <div class="flex size-12 shrink-0 items-center">
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20"
+                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBPVaCos61Ksfu45Qgm3prI2VSxM-x7MuC5_WiMeMOGTsvtWWKLOsfDimG6kzsIJ_BGNAJdltPZCeuMnW4v8hJxXYl50_6nYMX7p3T4ysHyODTZOu-FKYh2uS1xULQ8p0BDFjV5PUsRBVMga73mEzERIaLvkB-OEi8aOnrrgir-8q1FJnhW3TN8kXI4BlnQ8XIKW4E_zOjj_m3nkekwCP4QqJlJi8H-Q0nXTN5bC8itU2GdSLvsd_cGc7dCqQtBunVx_hgS6aw2o0xH");'>
+                    </div>
+                </div>
+                <div class="flex-1 px-3">
+                    <p class="text-primary/70 text-xs font-semibold uppercase tracking-wider">Bienvenido</p>
+                    <h2 class="text-[#1b110e] text-xl font-bold leading-tight tracking-[-0.015em]">¡Hola, Alain!</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined text-xl">notifications</span>
+                    </button>
+                </div>
+            </header>
+            <main class="flex-1 overflow-y-auto pb-24">
+                <div class="p-4">
+                    <div
+                        class="relative flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(216,72,24,0.12)] bg-white overflow-hidden border border-primary/5">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
+                        <div
+                            class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 p-5 relative z-10">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="material-symbols-outlined text-primary text-sm">calendar_today</span>
+                                <p class="text-primary text-xs font-bold uppercase tracking-[0.1em]">Resumen Diario</p>
+                            </div>
+                            <h1 id="today-classes-count"
+                                class="text-[#1b110e] text-3xl font-bold leading-tight tracking-[-0.015em]">Cargando...
+                            </h1>
+                            <div id="next-class-preview" class="mt-4 flex flex-col gap-3">
+                                <!-- Next class will be dynamic -->
+                            </div>
+                        </div>
+                        <div class="w-full bg-center bg-no-repeat h-32 bg-cover"
+                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDSm_mQh0sRy1kq8UgQyMiIa0uNiRCj0jpqwL8lqLgTVYpsyr0qTBg14H8H__WbWr7BBM_ftZ6glN-6KkMJd9ghDPLLTZlYbvs6dfAfKYYP-JztiP1vvA85SucWheMMmpDmmQA0w9ySf27tGimfRHzbeoAl9jkjKlE0OUPMUn2f_ZAi3OfLrOZ2XTZC3acpqhA9A9gJyxBzE7A_HtuJ4uWbT77kzLDRwW2U0WQho7vJYpLfN2GYPRvO8BSX7oAkHf4lnuDtu_HeXRLp");'>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between px-4 pb-3 pt-4">
+                    <h2 class="text-[#1b110e] text-lg font-bold leading-tight tracking-[-0.015em]">Próximas Clases</h2>
+                    <button onclick="router.navigate('calendar')"
+                        class="text-primary text-sm font-bold flex items-center gap-1">
+                        Ver todo <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
+                </div>
+                <div id="upcoming-classes-list" class="flex flex-col gap-3 px-4">
+                    <!-- Dynamic classes -->
+                </div>
+                <div class="grid grid-cols-2 gap-4 p-4">
+                    <div class="bg-primary/5 border border-primary/10 p-4 rounded-xl">
+                        <p class="text-primary/60 text-[10px] font-bold uppercase tracking-wider">Horas Semanales</p>
+                        <p id="weekly-hours" class="text-primary text-2xl font-bold">--h</p>
+                    </div>
+                    <div class="bg-primary/5 border border-primary/10 p-4 rounded-xl">
+                        <p class="text-primary/60 text-[10px] font-bold uppercase tracking-wider">Estudiantes</p>
+                        <p id="total-students" class="text-primary text-2xl font-bold">--</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- CALENDAR PAGE -->
+        <div id="calendar-page" class="page-container flex flex-col h-full overflow-hidden">
+            <header class="flex items-center bg-white p-4 pb-2 justify-between border-b border-gray-100">
+                <div class="text-primary flex size-10 shrink-0 items-center justify-center">
+                    <span class="material-symbols-outlined text-3xl">sports_tennis</span>
+                </div>
+                <h2 class="text-[#1b110e] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
+                    Calendario</h2>
+                <div class="flex w-10"></div>
+            </header>
+            <main class="flex-1 overflow-y-auto pb-24">
+                <!-- Simple Agenda View for now -->
+                <div id="calendar-agenda" class="p-4 space-y-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 id="selected-date-label" class="text-lg font-bold">Hoy</h3>
+                    </div>
+                    <div id="day-agenda-list" class="space-y-4">
+                        <!-- Dynamic agenda -->
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- STUDENTS PAGE -->
+        <div id="students-page" class="page-container flex flex-col h-full overflow-hidden">
+            <header class="bg-white px-4 py-4 border-b border-primary/10">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-primary p-1.5 rounded-lg">
+                            <span class="material-symbols-outlined text-white text-2xl">sports_tennis</span>
+                        </div>
+                        <h1 class="text-xl font-bold tracking-tight text-[#1b110e]">Mis Alumnos</h1>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60">search</span>
+                    <input id="student-search"
+                        class="w-full bg-background-light border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400"
+                        placeholder="Buscar alumno..." type="text" />
+                </div>
+            </header>
+            <main id="students-list" class="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-background-light pb-24">
+                <!-- Dynamic students -->
+            </main>
+        </div>
+
+        <!-- CLUBS PAGE -->
+        <div id="clubs-page" class="page-container flex flex-col h-full overflow-hidden">
+            <header class="bg-white px-4 py-4 border-b border-primary/10">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-primary p-1.5 rounded-lg">
+                            <span class="material-symbols-outlined text-white text-2xl">location_on</span>
+                        </div>
+                        <h1 class="text-xl font-bold tracking-tight text-[#1b110e]">Mis Clubs</h1>
+                    </div>
+                </div>
+            </header>
+            <main id="clubs-list" class="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-background-light pb-24">
+                <!-- Dynamic clubs -->
+            </main>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="absolute bottom-20 right-4 z-20">
+            <button id="add-btn"
+                class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/40 transition-transform active:scale-90 hover:scale-105">
+                <span class="material-symbols-outlined text-3xl">add</span>
+            </button>
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <nav
+            class="absolute bottom-0 left-0 right-0 z-30 flex gap-2 border-t border-primary/5 bg-white/95 backdrop-blur-md px-6 pb-6 pt-3 h-20">
+            <a onclick="router.navigate('dashboard')"
+                class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-primary"
+                href="javascript:void(0)" data-page="dashboard">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">dashboard</span>
+                </div>
+                <p class="text-[10px] font-bold leading-normal tracking-wide">DASHBOARD</p>
+            </a>
+            <a onclick="router.navigate('calendar')"
+                class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
+                href="javascript:void(0)" data-page="calendar">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                </div>
+                <p class="text-[10px] font-bold leading-normal tracking-wide">CALENDARIO</p>
+            </a>
+            <a onclick="router.navigate('students')"
+                class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
+                href="javascript:void(0)" data-page="students">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined">group</span>
+                </div>
+                <p class="text-[10px] font-bold leading-normal tracking-wide">ALUMNOS</p>
+            </a>
+            <a onclick="router.navigate('clubs')"
+                class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
+                href="javascript:void(0)" data-page="clubs">
+                <div class="flex h-6 items-center justify-center">
+                    <span class="material-symbols-outlined">location_on</span>
+                </div>
+                <p class="text-[10px] font-bold leading-normal tracking-wide">CLUBS</p>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Modals -->
+    <!-- Modal Añadir Alumno -->
+    <div id="add-student-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+            <h3 class="text-xl font-bold mb-4">Añadir Alumno</h3>
+            <div class="space-y-4">
+                <input id="new-student-name" type="text" placeholder="Nombre completo"
+                    class="w-full border-gray-200 rounded-xl px-4 py-3" />
+                <input id="new-student-level" type="text" placeholder="Nivel (ej. Intermedio)"
+                    class="w-full border-gray-200 rounded-xl px-4 py-3" />
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeModal('add-student-modal')"
+                        class="flex-1 py-3 rounded-xl border border-gray-200 font-bold">Cancelar</button>
+                    <button onclick="saveStudent()"
+                        class="flex-1 py-3 rounded-xl bg-primary text-white font-bold">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Añadir Clase -->
+    <div id="add-class-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h3 class="text-xl font-bold mb-4">Programar Clase</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Alumno</label>
+                    <select id="class-student-id" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1"></select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Fecha</label>
+                    <input id="class-date" type="date" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1" />
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Inicio</label>
+                        <input id="class-start" type="time" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1"
+                            value="09:00" />
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Fin</label>
+                        <input id="class-end" type="time" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1"
+                            value="10:00" />
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Tipo</label>
+                    <select id="class-type" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1">
+                        <option value="Privada">Privada</option>
+                        <option value="Grupal">Grupal</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Pista</label>
+                    <input id="class-court" type="text" placeholder="Pista 1"
+                        class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1" />
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Club</label>
+                    <select id="class-club-id" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1"></select>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeModal('add-class-modal')"
+                        class="flex-1 py-3 rounded-xl border border-gray-200 font-bold">Cancelar</button>
+                    <button onclick="saveClass()"
+                        class="flex-1 py-3 rounded-xl bg-primary text-white font-bold">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Añadir Club -->
+    <div id="add-club-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+            <h3 class="text-xl font-bold mb-4">Añadir Club</h3>
+            <div class="space-y-4">
+                <input id="new-club-name" type="text" placeholder="Nombre del club"
+                    class="w-full border-gray-200 rounded-xl px-4 py-3" />
+                <input id="new-club-address" type="text" placeholder="Dirección"
+                    class="w-full border-gray-200 rounded-xl px-4 py-3" />
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeModal('add-club-modal')"
+                        class="flex-1 py-3 rounded-xl border border-gray-200 font-bold">Cancelar</button>
+                    <button onclick="saveClub()"
+                        class="flex-1 py-3 rounded-xl bg-primary text-white font-bold">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://baiwqnfryhxacadgnzxn.supabase.co';
+        const supabaseKey = 'sb_publishable_TTv6UG3ljM8o69h7IOEenw_LwTGbdeS';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // State Management
+        const state = {
+            alumnos: [],
+            clases: [],
+            clubes: [],
+            currentPage: 'dashboard'
+        };
+
+        // Router
+        const router = {
+            navigate: (page) => {
+                state.currentPage = page;
+                document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
+                document.getElementById(`${page}-page`).classList.add('active');
+
+                // Update nav styles
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    const isSelected = item.dataset.page === page;
+                    item.classList.toggle('text-primary', isSelected);
+                    item.classList.toggle('text-[#97604e]/60', !isSelected);
+                    const icon = item.querySelector('.material-symbols-outlined');
+                    icon.style.fontVariationSettings = isSelected ? "'FILL' 1" : "'FILL' 0";
+                });
+
+                if (page === 'dashboard') loadDashboard();
+                if (page === 'calendar') loadCalendar();
+                if (page === 'students') loadStudents();
+                if (page === 'clubs') loadClubs();
+            }
+        };
+
+        // Data Loading
+        async function loadDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+
+            // Get today's classes
+            const { data: todayClasses } = await _supabase
+                .from('clases')
+                .select('*, alumnos(nombre, nivel, avatar_url), clubes(nombre)')
+                .eq('fecha', today)
+                .order('hora_inicio');
+
+            document.getElementById('today-classes-count').innerText = `${todayClasses?.length || 0} clases hoy`;
+
+            const nextClassPreview = document.getElementById('next-class-preview');
+            if (todayClasses && todayClasses.length > 0) {
+                const next = todayClasses[0];
+                nextClassPreview.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                            <span class="material-symbols-outlined text-primary">sports_tennis</span>
+                        </div>
+                        <div>
+                            <p class="text-[#1b110e] text-sm font-semibold">${next.pista || 'Sin pista'} - ${next.clubes?.nombre || 'Club'}</p>
+                            <p class="text-primary/80 text-xs font-medium">Próxima clase: ${next.alumnos.nombre} a las ${next.hora_inicio.substring(0, 5)}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                nextClassPreview.innerHTML = `<p class="text-gray-400 text-sm">No tienes clases para hoy</p>`;
+            }
+
+            // Upcoming list
+            const { data: upcoming } = await _supabase
+                .from('clases')
+                .select('*, alumnos(nombre, nivel, avatar_url), clubes(nombre)')
+                .gte('fecha', today)
+                .order('fecha')
+                .order('hora_inicio')
+                .limit(5);
+
+            const list = document.getElementById('upcoming-classes-list');
+            list.innerHTML = upcoming?.map(cls => `
+                <div class="flex items-center gap-4 bg-white p-4 rounded-xl border border-primary/5 shadow-sm">
+                    <div class="relative">
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 border-2 border-primary/10" style='background-image: url("${cls.alumnos.avatar_url || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'}");'></div>
+                    </div>
+                    <div class="flex flex-col flex-1">
+                        <div class="flex items-center gap-2">
+                            <p class="text-[#1b110e] text-base font-bold leading-normal">${cls.alumnos.nombre}</p>
+                            <span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-tighter">${cls.alumnos.nivel || 'Nivel'}</span>
+                        </div>
+                        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">${cls.clubes?.nombre || ''}</p>
+                        <p class="text-primary/70 text-xs font-medium flex items-center gap-1 mt-0.5" title="${cls.fecha}">
+                            <span class="material-symbols-outlined text-xs">schedule</span> ${cls.hora_inicio.substring(0, 5)} - ${cls.hora_fin.substring(0, 5)}
+                        </p>
+                    </div>
+                    <div class="shrink-0">
+                        <button class="flex items-center justify-center rounded-lg h-9 px-4 ${cls.pagado ? 'bg-green-500' : 'bg-primary'} text-white text-xs font-bold transition-all active:scale-95 shadow-md">
+                            ${cls.pagado ? 'Pagado' : 'Check In'}
+                        </button>
+                    </div>
+                </div>
+            `).join('') || '';
+
+            // Stats
+            const { count: studentCount } = await _supabase.from('alumnos').select('*', { count: 'exact', head: true });
+            document.getElementById('total-students').innerText = studentCount;
+        }
+
+        async function loadStudents() {
+            const { data: students } = await _supabase
+                .from('alumnos')
+                .select('*')
+                .order('nombre');
+
+            const list = document.getElementById('students-list');
+            list.innerHTML = students?.map(s => `
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-200 border-2 border-primary/20">
+                                <img class="w-full h-full object-cover" src="${s.avatar_url || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'}"/>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-[#1b110e]">${s.nombre}</h3>
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">${s.nivel || 'Nivel'}</span>
+                                    <span class="text-xs text-gray-400">• ${s.estado || 'Active'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-1">
+                            <button class="p-2 text-primary bg-primary/5 rounded-lg">
+                                <span class="material-symbols-outlined text-xl">call</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') || '';
+        }
+
+        async function loadCalendar() {
+            const today = new Date().toISOString().split('T')[0];
+            const { data: agenda } = await _supabase
+                .from('clases')
+                .select('*, alumnos(nombre, nivel), clubes(nombre)')
+                .eq('fecha', today)
+                .order('hora_inicio');
+
+            const list = document.getElementById('day-agenda-list');
+            list.innerHTML = agenda?.map(cls => `
+                <div class="flex gap-4 p-3 rounded-xl ${cls.tipo === 'Grupal' ? 'bg-primary/10 border-l-4 border-primary' : 'bg-white border border-gray-100 shadow-sm border-l-4 border-primary/30'}">
+                    <div class="flex flex-col items-center justify-center min-w-[60px] py-1">
+                        <span class="text-sm font-bold text-primary">${cls.hora_inicio.substring(0, 5)}</span>
+                        <span class="text-[10px] text-primary/70 font-medium">60 MIN</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-sm text-[#1b110e]">${cls.alumnos.nombre}</h4>
+                            <span class="material-symbols-outlined text-primary text-sm">${cls.tipo === 'Grupal' ? 'groups' : 'person'}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">${cls.pista || 'Sin pista'} • ${cls.clubes?.nombre || 'Club'}</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${cls.pagado ? 'bg-primary text-white' : 'bg-yellow-100 text-yellow-700'}">
+                                ${cls.pagado ? 'PAGADO' : 'PENDIENTE'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-center py-8 text-gray-400">Sin clases para hoy</p>';
+        }
+
+        async function loadClubs() {
+            const { data: clubs } = await _supabase
+                .from('clubes')
+                .select('*')
+                .order('nombre');
+
+            const list = document.getElementById('clubs-list');
+            list.innerHTML = clubs?.map(c => `
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-primary text-2xl">location_on</span>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-[#1b110e]">${c.nombre}</h3>
+                        <p class="text-xs text-gray-400">${c.direccion || 'Sin dirección'}</p>
+                    </div>
+                    <button class="p-2 text-gray-400">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
+            `).join('') || '<p class="text-center py-8 text-gray-400">No has añadido clubs todavía</p>';
+        }
+
+        // Modal Logic
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        async function openAddClassModal() {
+            const { data: students } = await _supabase.from('alumnos').select('id, nombre').order('nombre');
+            const { data: clubs } = await _supabase.from('clubes').select('id, nombre').order('nombre');
+
+            const selectStudent = document.getElementById('class-student-id');
+            selectStudent.innerHTML = students.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+
+            const selectClub = document.getElementById('class-club-id');
+            selectClub.innerHTML = clubs.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+
+            // Set default date to today
+            document.getElementById('class-date').value = new Date().toISOString().split('T')[0];
+
+            openModal('add-class-modal');
+        }
+
+        async function saveStudent() {
+            const nombre = document.getElementById('new-student-name').value;
+            const nivel = document.getElementById('new-student-level').value;
+
+            if (!nombre) return alert('Nombre es obligatorio');
+
+            const { error } = await _supabase.from('alumnos').insert([{ nombre, nivel }]);
+
+            if (error) {
+                alert('Error guardando alumno');
+            } else {
+                closeModal('add-student-modal');
+                if (state.currentPage === 'students') loadStudents();
+                if (state.currentPage === 'dashboard') loadDashboard();
+            }
+        }
+
+        async function saveClub() {
+            const nombre = document.getElementById('new-club-name').value;
+            const direccion = document.getElementById('new-club-address').value;
+
+            if (!nombre) return alert('Nombre del club es obligatorio');
+
+            const { error } = await _supabase.from('clubes').insert([{ nombre, direccion }]);
+
+            if (error) {
+                alert('Error guardando club');
+            } else {
+                closeModal('add-club-modal');
+                if (state.currentPage === 'clubs') loadClubs();
+            }
+        }
+
+        async function saveClass() {
+            const studentId = document.getElementById('class-student-id').value;
+            const date = document.getElementById('class-date').value;
+            const start = document.getElementById('class-start').value;
+            const end = document.getElementById('class-end').value;
+            const type = document.getElementById('class-type').value;
+            const court = document.getElementById('class-court').value;
+            const clubId = document.getElementById('class-club-id').value;
+
+            if (!studentId || !date || !start || !end) return alert('Todos los campos son obligatorios');
+
+            const { error } = await _supabase.from('clases').insert([{
+                alumno_id: studentId,
+                fecha: date,
+                hora_inicio: start,
+                hora_fin: end,
+                tipo: type,
+                pista: court,
+                club_id: clubId
+            }]);
+
+            if (error) {
+                alert('Error guardando clase: ' + error.message);
+            } else {
+                closeModal('add-class-modal');
+                if (state.currentPage === 'dashboard') loadDashboard();
+                if (state.currentPage === 'calendar') loadCalendar();
+            }
+        }
+
+        // FAB Logic
+        document.getElementById('add-btn').onclick = () => {
+            if (state.currentPage === 'students') {
+                openModal('add-student-modal');
+            } else if (state.currentPage === 'clubs') {
+                openModal('add-club-modal');
+            } else if (state.currentPage === 'dashboard' || state.currentPage === 'calendar') {
+                openAddClassModal();
+            }
+        };
+
+        // Initial Load
+        loadDashboard();
+    </script>
+</body>
+
+</html>
