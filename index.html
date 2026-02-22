@@ -1176,7 +1176,8 @@
     <!-- Modal Gestionar Horario Fijo -->
     <div id="weekly-slot-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <h3 class="text-xl font-bold mb-4">Añadir a Horario Fijo</h3>
+            <h3 class="text-xl font-bold mb-4" id="weekly-slot-modal-title">Añadir a Horario Fijo</h3>
+            <input type="hidden" id="weekly-slot-id" />
             <input type="hidden" id="weekly-day-index" />
             <div class="space-y-4">
                 <div>
@@ -1198,6 +1199,13 @@
                 <div>
                     <label class="text-xs font-bold text-gray-400 uppercase">Club</label>
                     <select id="weekly-club-id" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1"></select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Tipo</label>
+                    <select id="weekly-type" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1">
+                        <option value="Particular">Particular (15€)</option>
+                        <option value="Grupal">Grupal (11€)</option>
+                    </select>
                 </div>
                 <div class="flex gap-3 mt-6">
                     <button onclick="closeModal('weekly-slot-modal')"
@@ -1388,47 +1396,66 @@
                 .limit(5);
 
             const list = document.getElementById('upcoming-classes-list');
-            list.innerHTML = upcoming?.map(cls => `
-                <div class="flex items-center gap-4 bg-white p-4 rounded-xl border border-primary/5 shadow-sm">
-                    <div class="relative">
-                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 border-2 border-primary/10" style='background-image: url("${cls.alumnos.avatar_url || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'}");'></div>
-                    </div>
-                    <div class="flex flex-col flex-1">
-                        <div class="flex items-center gap-2">
-                            <p class="text-[#1b110e] text-base font-bold leading-normal">${cls.alumnos.nombre}</p>
-                            <span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-tighter">${cls.alumnos.nivel || 'Nivel'}</span>
+            list.innerHTML = upcoming?.map(cls => {
+                const dateObj = new Date(cls.fecha);
+                const isToday = cls.fecha === today;
+
+                // Helper for tomorrow
+                const tomorrowDate = new Date();
+                tomorrowDate.setDate(new Date().getDate() + 1);
+                const tomorrowStr = tomorrowDate.toLocaleDateString('en-CA');
+                const isTomorrow = cls.fecha === tomorrowStr;
+
+                let dateDisplay = "";
+                if (isToday) dateDisplay = "Hoy";
+                else if (isTomorrow) dateDisplay = "Mañana";
+                else dateDisplay = dateObj.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+
+                return `
+                    <div class="flex items-center gap-4 bg-white p-4 rounded-xl border border-primary/5 shadow-sm">
+                        <div class="relative">
+                            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 border-2 border-primary/10" style='background-image: url("${cls.alumnos.avatar_url || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'}");'></div>
                         </div>
-                        <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">${cls.clubes?.nombre || ''}</p>
-                        <p class="text-primary/70 text-xs font-medium flex items-center justify-between gap-1 mt-0.5">
-                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">schedule</span> ${cls.hora_inicio.substring(0, 5)} - ${cls.hora_fin.substring(0, 5)}</span>
-                            ${cls.precio ? `<span class="font-bold text-[#1b110e]">${cls.precio}€</span>` : ''}
-                        </p>
-                    </div>
-                    <div class="shrink-0 flex items-center gap-2">
-                        <div class="flex flex-col gap-1 items-end">
-                            <button onclick="togglePaid('${cls.id}', ${cls.pagado})" class="flex items-center justify-center rounded-lg h-9 px-4 ${cls.pagado ? 'bg-green-500' : 'bg-primary'} text-white text-xs font-bold transition-all active:scale-95 shadow-md">
-                                ${cls.pagado ? 'Pagado' : 'Pendiente'}
-                            </button>
-                            <div class="flex gap-2 mt-1">
-                                <button onclick="openEditClassModal('${cls.id}')" class="text-[10px] font-bold text-blue-600 hover:underline transition-all">
-                                    Editar
-                                </button>
-                                ${cls.pagado ? `
-                                    <button onclick="openProfitModal('${cls.id}', 'clases', ${cls.precio || 0}, ${cls.ganancia_neta || 'null'})" class="text-[10px] font-bold ${cls.ganancia_neta !== null ? 'text-green-600' : 'text-primary underline'} transition-all">
-                                        ${cls.ganancia_neta !== null ? 'Propio: ' + cls.ganancia_neta + '€' : '¿Mi parte?'}
-                                    </button>
-                                ` : ''}
+                        <div class="flex flex-col flex-1">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <p class="text-[#1b110e] text-base font-bold leading-normal">${cls.alumnos.nombre}</p>
+                                    <span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-tighter">${cls.alumnos.nivel || 'Nivel'}</span>
+                                </div>
+                                <span class="text-[10px] font-bold text-primary uppercase bg-primary/5 px-2 py-1 rounded-lg">${dateDisplay}</span>
                             </div>
+                            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">${cls.clubes?.nombre || ''}</p>
+                            <p class="text-primary/70 text-xs font-medium flex items-center justify-between gap-1 mt-0.5">
+                                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">schedule</span> ${cls.hora_inicio.substring(0, 5)} - ${cls.hora_fin.substring(0, 5)}</span>
+                                ${cls.precio ? `<span class="font-bold text-[#1b110e]">${cls.precio}€</span>` : ''}
+                            </p>
                         </div>
+                        <div class="shrink-0 flex items-center gap-2">
+                            <div class="flex flex-col gap-1 items-end">
+                                <button onclick="togglePaid('${cls.id}', ${cls.pagado})" class="flex items-center justify-center rounded-lg h-9 px-4 ${cls.pagado ? 'bg-green-500' : 'bg-primary'} text-white text-xs font-bold transition-all active:scale-95 shadow-md">
+                                    ${cls.pagado ? 'Pagado' : 'Pendiente'}
+                                </button>
+                                <div class="flex gap-2 mt-1">
+                                    <button onclick="openEditClassModal('${cls.id}')" class="text-[10px] font-bold text-blue-600 hover:underline transition-all">
+                                        Editar
+                                    </button>
+                                    ${cls.pagado ? `
+                                        <button onclick="openProfitModal('${cls.id}', 'clases', ${cls.precio || 0}, ${cls.ganancia_neta || 'null'})" class="text-[10px] font-bold ${cls.ganancia_neta !== null ? 'text-green-600' : 'text-primary underline'} transition-all">
+                                            ${cls.ganancia_neta !== null ? 'Propio: ' + cls.ganancia_neta + '€' : '¿Mi parte?'}
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
                         ${cls.alumnos.telefono ? `
                             <button onclick="sendWhatsApp('${cls.alumnos.telefono}', 'Hola ${cls.alumnos.nombre}, te escribo para confirmar tu clase de tenis de hoy a las ${cls.hora_inicio.substring(0, 5)} en ${cls.clubes?.nombre || 'el club'}.')" 
                                 class="flex items-center justify-center rounded-lg h-10 w-10 bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white transition-all shadow-sm">
                                 <span class="material-symbols-outlined text-lg">message</span>
                             </button>
                         ` : ''}
+                        </div>
                     </div>
-                </div>
-            `).join('') || '';
+                `;
+            }).join('') || '';
 
             // Stats logic (Weekly)
             const weekStart = getStartOfWeek(new Date());
@@ -2581,13 +2608,24 @@
                 slotEl.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-xs font-black text-[#1b110e]">${slot.alumnos?.nombre || 'Consulting'}</p>
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <p class="text-xs font-black text-[#1b110e]">${slot.alumnos?.nombre || 'Consulting'}</p>
+                                <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${slot.tipo === 'Particular' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}">${slot.tipo}</span>
+                            </div>
                             <p class="text-[10px] text-gray-400 font-bold">${slot.hora_inicio.substring(0, 5)} - ${slot.hora_fin.substring(0, 5)}</p>
-                            <p class="text-[9px] text-primary/70 font-bold uppercase mt-1">${slot.clubes?.nombre || 'Sin Club'}</p>
+                            <div class="flex items-center justify-between mt-1 gap-2">
+                                <p class="text-[9px] text-primary/70 font-bold uppercase">${slot.clubes?.nombre || 'Sin Club'}</p>
+                                <p class="text-[10px] font-black text-[#1b110e]">${slot.precio}€</p>
+                            </div>
                         </div>
-                        <button onclick="deleteWeeklySlot('${slot.id}')" class="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-500 transition-all">
-                            <span class="material-symbols-outlined text-sm">delete</span>
-                        </button>
+                        <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onclick="openEditWeeklySlotModal('${slot.id}')" class="p-1 text-blue-400 hover:text-blue-500">
+                                <span class="material-symbols-outlined text-sm">edit</span>
+                            </button>
+                            <button onclick="deleteWeeklySlot('${slot.id}')" class="p-1 text-red-400 hover:text-red-500">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(slotEl);
@@ -2595,6 +2633,8 @@
         }
 
         function openWeeklySlotModal(dayIndex) {
+            document.getElementById('weekly-slot-id').value = '';
+            document.getElementById('weekly-slot-modal-title').innerText = 'Añadir a Horario Fijo';
             document.getElementById('weekly-day-index').value = dayIndex;
 
             // Populate selects
@@ -2607,20 +2647,57 @@
             openModal('weekly-slot-modal');
         }
 
+        async function openEditWeeklySlotModal(id) {
+            const slot = state.weeklySlots.find(s => s.id === id);
+            if (!slot) return;
+
+            document.getElementById('weekly-slot-id').value = slot.id;
+            document.getElementById('weekly-slot-modal-title').innerText = 'Editar Horario Fijo';
+            document.getElementById('weekly-day-index').value = slot.dia_semana;
+
+            // Populate selects
+            const studentSelect = document.getElementById('weekly-student-id');
+            studentSelect.innerHTML = state.alumnos.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('');
+            studentSelect.value = slot.alumno_id;
+
+            const clubSelect = document.getElementById('weekly-club-id');
+            clubSelect.innerHTML = state.clubes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+            clubSelect.value = slot.club_id;
+
+            document.getElementById('weekly-start').value = slot.hora_inicio.substring(0, 5);
+            document.getElementById('weekly-end').value = slot.hora_fin.substring(0, 5);
+            document.getElementById('weekly-type').value = slot.tipo;
+
+            openModal('weekly-slot-modal');
+        }
+
         async function saveWeeklySlot() {
-            const slot = {
+            const id = document.getElementById('weekly-slot-id').value;
+            const tipo = document.getElementById('weekly-type').value;
+            const precio = (tipo === 'Particular') ? 15 : 11;
+
+            const slotData = {
                 dia_semana: parseInt(document.getElementById('weekly-day-index').value),
                 alumno_id: document.getElementById('weekly-student-id').value,
                 club_id: document.getElementById('weekly-club-id').value,
                 hora_inicio: document.getElementById('weekly-start').value,
                 hora_fin: document.getElementById('weekly-end').value,
-                tipo: 'Privada',
-                precio: 11
+                tipo: tipo,
+                precio: precio
             };
 
-            const { error } = await _supabase.from('plantilla_semanal').insert(slot);
-            if (error) alert(error.message);
-            else {
+            let error;
+            if (id) {
+                const result = await _supabase.from('plantilla_semanal').update(slotData).eq('id', id);
+                error = result.error;
+            } else {
+                const result = await _supabase.from('plantilla_semanal').insert([slotData]);
+                error = result.error;
+            }
+
+            if (error) {
+                alert(error.message);
+            } else {
                 closeModal('weekly-slot-modal');
                 loadWeeklySchedule();
             }
