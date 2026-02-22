@@ -289,6 +289,13 @@
                     class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">payments</span>
                 <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Gestión de Pagos</span>
             </a>
+            <a onclick="router.navigate('extra-income')"
+                class="nav-item-desktop group flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:bg-primary/5"
+                data-page="extra-income">
+                <span
+                    class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">receipt_long</span>
+                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Otros Ingresos</span>
+            </a>
         </nav>
 
         <div class="p-6 border-t border-primary/5">
@@ -610,6 +617,25 @@
                 </main>
             </div>
 
+            <!-- EXTRA INCOME PAGE -->
+            <div id="extra-income-page" class="page-container">
+                <header
+                    class="flex items-center bg-background-light md:bg-transparent p-4 pb-2 justify-between shrink-0 md:mb-6">
+                    <div class="flex-1 px-3 md:px-0">
+                        <h2 class="text-[#1b110e] text-xl md:text-3xl font-bold leading-tight">Otros Ingresos</h2>
+                    </div>
+                    <button onclick="openAddExtraIncomeModal()"
+                        class="hidden md:flex bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+                        Añadir Ingreso
+                    </button>
+                </header>
+                <main class="flex-1 overflow-y-auto px-4 py-4 md:px-0 pb-24 no-scrollbar">
+                    <div id="extra-income-list" class="space-y-4">
+                        <!-- Dynamic extra income list -->
+                    </div>
+                </main>
+            </div>
+
             <!-- Floating Action Button (Mobile) -->
             <div class="fab-container absolute bottom-24 right-6 z-20 md:hidden">
                 <button id="add-btn"
@@ -645,6 +671,14 @@
                         <span class="material-symbols-outlined">payments</span>
                     </div>
                     <p class="text-[10px] font-bold leading-normal tracking-wide">PAGOS</p>
+                </a>
+                <a onclick="router.navigate('extra-income')"
+                    class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
+                    href="javascript:void(0)" data-page="extra-income">
+                    <div class="flex h-6 items-center justify-center">
+                        <span class="material-symbols-outlined">receipt_long</span>
+                    </div>
+                    <p class="text-[10px] font-bold leading-normal tracking-wide">OTROS</p>
                 </a>
                 <a onclick="router.navigate('students')"
                     class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
@@ -766,6 +800,75 @@
     </div>
 
 
+    <!-- ADD EXTRA INCOME MODAL -->
+    <div id="add-extra-income-modal"
+        class="modal-overlay fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm px-0 md:px-4 hidden">
+        <div
+            class="modal-content w-full md:max-w-md bg-white rounded-t-[32px] md:rounded-[24px] overflow-hidden shadow-2xl animate-slide-up">
+            <div class="p-6 md:p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-2xl font-bold text-[#1b110e]">Otros Ingresos</h3>
+                    <button onclick="closeModal('add-extra-income-modal')"
+                        class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <span class="material-symbols-outlined text-gray-400">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-5">
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Alumno</label>
+                        <select id="extra-student-id" onchange="toggleManualName()"
+                            class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+                            <option value="">-- Seleccionar Alumno --</option>
+                            <option value="manual">Otro / Anotar a mano</option>
+                        </select>
+                    </div>
+
+                    <div id="manual-name-container" class="hidden">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nombre del
+                            Alumno/Padre</label>
+                        <input id="extra-manual-name"
+                            class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                            placeholder="Nombre completo" type="text" />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Concepto</label>
+                        <input id="extra-concept"
+                            class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                            placeholder="Ej: Torneo, Cordaje, Ropa..." type="text" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Cantidad
+                                (€)</label>
+                            <input id="extra-amount"
+                                class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all font-extrabold text-primary"
+                                placeholder="0.00" type="number" step="0.01" />
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Fecha</label>
+                            <input id="extra-date"
+                                class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                                type="date" />
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="closeModal('add-extra-income-modal')"
+                            class="flex-1 py-3 rounded-xl border border-gray-200 font-bold">Cancelar</button>
+                        <button onclick="saveExtraIncome()"
+                            class="flex-1 py-3 rounded-xl bg-primary text-white font-bold">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize Supabase
         const supabaseUrl = 'https://baiwqnfryhxacadgnzxn.supabase.co';
@@ -816,6 +919,7 @@
                 if (page === 'clubs') loadClubs();
                 if (page === 'finance') loadFinance();
                 if (page === 'payments') loadPayments();
+                if (page === 'extra-income') loadExtraIncome();
             }
         };
 
@@ -1229,6 +1333,7 @@
                 if (state.currentPage === 'dashboard') loadDashboard();
                 if (state.currentPage === 'calendar') loadCalendar();
                 if (state.currentPage === 'finance') loadFinance();
+                if (state.currentPage === 'payments') loadPayments();
             }
         }
 
@@ -1248,11 +1353,22 @@
                 document.getElementById('finance-period-label').innerText = `${months[start.getMonth()]} ${start.getFullYear()}`;
             }
 
+            const startStr = start.toLocaleDateString('en-CA');
+            const endStr = end.toLocaleDateString('en-CA');
+
+            // Get classes
             const { data: financeData } = await _supabase
                 .from('clases')
                 .select('*, alumnos(nombre, avatar_url)')
-                .gte('fecha', start.toLocaleDateString('en-CA'))
-                .lte('fecha', end.toLocaleDateString('en-CA'));
+                .gte('fecha', startStr)
+                .lte('fecha', endStr);
+
+            // Get extra income
+            const { data: extraIncomeData } = await _supabase
+                .from('ingresos_extras')
+                .select('*, alumnos(nombre, avatar_url)')
+                .gte('fecha', startStr)
+                .lte('fecha', endStr);
 
             let totalPaid = 0;
             let totalPending = 0;
@@ -1260,7 +1376,7 @@
 
             if (financeData) {
                 financeData.forEach(c => {
-                    const amount = parseFloat(c.price || c.precio || 0);
+                    const amount = parseFloat(c.precio || 0);
                     if (c.pagado) totalPaid += amount;
                     else totalPending += amount;
 
@@ -1273,13 +1389,27 @@
                 });
             }
 
+            // Add extra income (always considered "paid")
+            if (extraIncomeData) {
+                extraIncomeData.forEach(e => {
+                    const amount = parseFloat(e.cantidad || 0);
+                    totalPaid += amount;
+
+                    const studentName = e.alumnos?.nombre || e.nombre_manual || 'Otros / Varios';
+                    if (!studentEarns[studentName]) {
+                        studentEarns[studentName] = { paid: 0, pending: 0, avatar: e.alumnos?.avatar_url };
+                    }
+                    studentEarns[studentName].paid += amount;
+                });
+            }
+
             document.getElementById('finance-total-paid').innerText = totalPaid.toFixed(2) + '€';
             document.getElementById('finance-total-pending').innerText = totalPending.toFixed(2) + '€';
 
             const list = document.getElementById('finance-student-list');
-            const students = Object.keys(studentEarns).sort();
+            const sortedNames = Object.keys(studentEarns).sort((a, b) => (studentEarns[b].paid + studentEarns[b].pending) - (studentEarns[a].paid + studentEarns[a].pending));
 
-            list.innerHTML = students.map(name => {
+            list.innerHTML = sortedNames.map(name => {
                 const data = studentEarns[name];
                 return `
                     <div class="bg-white p-4 rounded-xl border border-primary/5 shadow-sm flex items-center justify-between">
@@ -1298,7 +1428,52 @@
                         </div>
                     </div>
                 `;
-            }).join('') || '<p class="text-center py-8 text-gray-400">Sin ingresos registrados esta semana</p>';
+            }).join('') || '<p class="text-center py-8 text-gray-400">Sin ingresos registrados</p>';
+        }
+
+        async function loadExtraIncome() {
+            const { data: extras } = await _supabase
+                .from('ingresos_extras')
+                .select('*, alumnos(nombre)')
+                .order('fecha', { ascending: false });
+
+            const list = document.getElementById('extra-income-list');
+
+            if (!extras || extras.length === 0) {
+                list.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center border border-dashed border-gray-200">
+                    <p class="text-gray-400">No hay otros ingresos registrados.</p>
+                </div>`;
+                return;
+            }
+
+            list.innerHTML = extras.map(e => {
+                const dateObj = new Date(e.fecha);
+                const nombre = e.alumnos?.nombre || e.nombre_manual || 'Varios';
+                return `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-primary/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary/5 flex flex-col items-center justify-center shrink-0">
+                                <span class="text-[10px] font-bold text-primary uppercase">${dateObj.toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                <span class="text-lg font-bold text-[#1b110e] leading-none">${dateObj.getDate()}</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-[#1b110e]">${nombre}</h3>
+                                <p class="text-xs text-gray-500 font-medium">${e.concepto}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0">
+                            <div class="text-right">
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Cantidad</p>
+                                <p class="text-lg font-extrabold text-[#1b110e]">${e.cantidad}€</p>
+                            </div>
+                            <button onclick="deleteExtraIncome('${e.id}')" class="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-600 hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-xl">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         async function loadClubs(searchQuery = '') {
@@ -1483,6 +1658,8 @@
                 openModal('add-club-modal');
             } else if (state.currentPage === 'dashboard' || state.currentPage === 'calendar' || state.currentPage === 'payments') {
                 openAddClassModal();
+            } else if (state.currentPage === 'extra-income') {
+                openAddExtraIncomeModal();
             }
         };
 
@@ -1634,7 +1811,66 @@
                 if (state.currentPage === 'dashboard') loadDashboard();
                 if (state.currentPage === 'calendar') loadCalendar();
                 if (state.currentPage === 'finance') loadFinance();
+                if (state.currentPage === 'payments') loadPayments();
             }
+        }
+
+        async function openAddExtraIncomeModal() {
+            const { data: students } = await _supabase.from('alumnos').select('id, nombre').order('nombre');
+            const select = document.getElementById('extra-student-id');
+            select.innerHTML = '<option value="">-- Seleccionar Alumno --</option><option value="manual">Otro / Anotar a mano</option>' +
+                students.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+
+            document.getElementById('extra-manual-name').value = '';
+            document.getElementById('extra-concept').value = '';
+            document.getElementById('extra-amount').value = '';
+            document.getElementById('extra-date').value = new Date().toLocaleDateString('en-CA');
+            toggleManualName();
+            openModal('add-extra-income-modal');
+        }
+
+        function toggleManualName() {
+            const select = document.getElementById('extra-student-id');
+            const container = document.getElementById('manual-name-container');
+            if (select.value === 'manual') container.classList.remove('hidden');
+            else container.classList.add('hidden');
+        }
+
+        async function saveExtraIncome() {
+            const studentId = document.getElementById('extra-student-id').value;
+            const manualName = document.getElementById('extra-manual-name').value;
+            const concept = document.getElementById('extra-concept').value;
+            const amount = document.getElementById('extra-amount').value;
+            const date = document.getElementById('extra-date').value;
+
+            if (!concept || !amount || !date) return alert('Concepto, cantidad y fecha son obligatorios');
+            if (!studentId && !manualName) return alert('Debes seleccionar un alumno o anotar un nombre');
+
+            const data = {
+                concepto: concept,
+                cantidad: parseFloat(amount),
+                fecha: date
+            };
+
+            if (studentId === 'manual') data.nombre_manual = manualName;
+            else if (studentId) data.alumno_id = studentId;
+
+            const { error } = await _supabase.from('ingresos_extras').insert([data]);
+
+            if (error) {
+                alert('Error guardando el ingreso: ' + error.message);
+            } else {
+                closeModal('add-extra-income-modal');
+                if (state.currentPage === 'extra-income') loadExtraIncome();
+                if (state.currentPage === 'finance') loadFinance();
+            }
+        }
+
+        async function deleteExtraIncome(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este ingreso?')) return;
+            const { error } = await _supabase.from('ingresos_extras').delete().eq('id', id);
+            if (error) alert('Error al eliminar');
+            else loadExtraIncome();
         }
 
         function sendWhatsApp(phone, message = 'Hola! Te escribo desde Tennis Coach Pro.') {
