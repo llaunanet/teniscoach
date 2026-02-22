@@ -279,8 +279,15 @@
                 class="nav-item-desktop group flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:bg-primary/5"
                 data-page="finance">
                 <span
+                    class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">query_stats</span>
+                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Estadísticas</span>
+            </a>
+            <a onclick="router.navigate('payments')"
+                class="nav-item-desktop group flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:bg-primary/5"
+                data-page="payments">
+                <span
                     class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">payments</span>
-                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Finanzas</span>
+                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Gestión de Pagos</span>
             </a>
         </nav>
 
@@ -576,6 +583,33 @@
                 </main>
             </div>
 
+            <!-- PAYMENTS MANAGEMENT PAGE -->
+            <div id="payments-page" class="page-container">
+                <header
+                    class="flex items-center bg-background-light md:bg-transparent p-4 pb-2 justify-between shrink-0 md:mb-6">
+                    <div class="flex-1 px-3 md:px-0">
+                        <h2 class="text-[#1b110e] text-xl md:text-3xl font-bold leading-tight">Gestión de Pagos</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative max-w-xs hidden md:block">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60 text-sm">filter_list</span>
+                            <select id="payment-status-filter" onchange="loadPayments()"
+                                class="bg-white border border-primary/10 rounded-xl py-2 pl-10 pr-4 text-xs appearance-none focus:ring-2 focus:ring-primary/20 shadow-sm">
+                                <option value="all">Todos los estados</option>
+                                <option value="pending">Solo Pendientes</option>
+                                <option value="paid">Solo Pagados</option>
+                            </select>
+                        </div>
+                    </div>
+                </header>
+                <main class="flex-1 overflow-y-auto px-4 py-4 md:px-0 pb-24 no-scrollbar">
+                    <div id="payments-list" class="space-y-4">
+                        <!-- Classes list for payment management -->
+                    </div>
+                </main>
+            </div>
+
             <!-- Floating Action Button (Mobile) -->
             <div class="fab-container absolute bottom-24 right-6 z-20 md:hidden">
                 <button id="add-btn"
@@ -603,6 +637,14 @@
                         <span class="material-symbols-outlined">calendar_month</span>
                     </div>
                     <p class="text-[10px] font-bold leading-normal tracking-wide">CALENDARIO</p>
+                </a>
+                <a onclick="router.navigate('payments')"
+                    class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
+                    href="javascript:void(0)" data-page="payments">
+                    <div class="flex h-6 items-center justify-center">
+                        <span class="material-symbols-outlined">payments</span>
+                    </div>
+                    <p class="text-[10px] font-bold leading-normal tracking-wide">PAGOS</p>
                 </a>
                 <a onclick="router.navigate('students')"
                     class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
@@ -773,6 +815,7 @@
                 if (page === 'students') loadStudents();
                 if (page === 'clubs') loadClubs();
                 if (page === 'finance') loadFinance();
+                if (page === 'payments') loadPayments();
             }
         };
 
@@ -927,6 +970,63 @@
 
             const { count: studentCount } = await _supabase.from('alumnos').select('*', { count: 'exact', head: true });
             document.getElementById('total-students').innerText = studentCount;
+        }
+
+        async function loadPayments() {
+            const filter = document.getElementById('payment-status-filter').value;
+
+            let query = _supabase
+                .from('clases')
+                .select('*, alumnos(nombre), clubes(nombre)')
+                .order('fecha', { ascending: false })
+                .order('hora_inicio', { ascending: false });
+
+            if (filter === 'pending') query = query.eq('pagado', false);
+            if (filter === 'paid') query = query.eq('pagado', true);
+
+            const { data: classes } = await query;
+
+            const list = document.getElementById('payments-list');
+
+            if (!classes || classes.length === 0) {
+                list.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center border border-dashed border-gray-200">
+                    <p class="text-gray-400">No hay clases registradas con este filtro.</p>
+                </div>`;
+                return;
+            }
+
+            list.innerHTML = classes.map(cls => {
+                const dateObj = new Date(cls.fecha);
+                return `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-primary/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary/5 flex flex-col items-center justify-center shrink-0">
+                                <span class="text-[10px] font-bold text-primary uppercase">${dateObj.toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                <span class="text-lg font-bold text-[#1b110e] leading-none">${dateObj.getDate()}</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-[#1b110e]">${cls.alumnos.nombre}</h3>
+                                <div class="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                    <span>${cls.hora_inicio.substring(0, 5)} - ${cls.hora_fin.substring(0, 5)}</span>
+                                    <span>•</span>
+                                    <span>${cls.clubes?.nombre || 'Sin club'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0">
+                            <div class="text-right">
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Cantidad</p>
+                                <p class="text-lg font-extrabold text-[#1b110e]">${cls.precio || 0}€</p>
+                            </div>
+                            <button onclick="togglePaid('${cls.id}', ${cls.pagado})" 
+                                class="h-11 px-6 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-95 ${cls.pagado ? 'bg-green-500 text-white shadow-green-500/20' : 'bg-primary/10 text-primary hover:bg-primary/20'}">
+                                ${cls.pagado ? 'Pagado' : 'Pendiente'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         async function loadStudents(searchQuery = '') {
@@ -1371,6 +1471,7 @@
                 closeModal('add-class-modal');
                 if (state.currentPage === 'dashboard') loadDashboard();
                 if (state.currentPage === 'calendar') loadCalendar();
+                if (state.currentPage === 'payments') loadPayments();
             }
         }
 
@@ -1380,7 +1481,7 @@
                 openModal('add-student-modal');
             } else if (state.currentPage === 'clubs') {
                 openModal('add-club-modal');
-            } else if (state.currentPage === 'dashboard' || state.currentPage === 'calendar') {
+            } else if (state.currentPage === 'dashboard' || state.currentPage === 'calendar' || state.currentPage === 'payments') {
                 openAddClassModal();
             }
         };
@@ -1398,6 +1499,22 @@
         });
 
         // Reminder Logic
+        async function togglePaid(classId, currentStatus) {
+            const { error } = await _supabase
+                .from('clases')
+                .update({ pagado: !currentStatus })
+                .eq('id', classId);
+
+            if (error) {
+                alert('Error al actualizar el estado de pago');
+            } else {
+                if (state.currentPage === 'dashboard') loadDashboard();
+                if (state.currentPage === 'payments') loadPayments();
+                if (state.currentPage === 'calendar') loadCalendar();
+                if (state.currentPage === 'finance') loadFinance();
+            }
+        }
+
         async function sendClassReminder(classId) {
             const { data: cls } = await _supabase
                 .from('clases')
