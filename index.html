@@ -495,6 +495,13 @@
                             Añadir Club
                         </button>
                     </div>
+                    <div class="relative max-w-md">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60">search</span>
+                        <input id="club-search"
+                            class="w-full bg-white md:bg-white border md:border-primary/10 rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400 shadow-sm"
+                            placeholder="Buscar club..." type="text" />
+                    </div>
                 </header>
                 <main id="clubs-list"
                     class="flex-1 overflow-y-auto px-4 py-4 md:px-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-background-light md:bg-transparent pb-24 no-scrollbar">
@@ -1128,11 +1135,17 @@
             }).join('') || '<p class="text-center py-8 text-gray-400">Sin ingresos registrados esta semana</p>';
         }
 
-        async function loadClubs() {
-            const { data: clubs } = await _supabase
+        async function loadClubs(searchQuery = '') {
+            let query = _supabase
                 .from('clubes')
                 .select('*')
                 .order('nombre');
+
+            if (searchQuery) {
+                query = query.ilike('nombre', `%${searchQuery}%`);
+            }
+
+            const { data: clubs } = await query;
 
             const list = document.getElementById('clubs-list');
             list.innerHTML = clubs?.map(c => `
@@ -1153,7 +1166,7 @@
                         </button>
                     </div>
                 </div>
-            `).join('') || '<p class="text-center py-8 text-gray-400 col-span-full">No has añadido clubs todavía</p>';
+            `).join('') || '<p class="text-center py-8 text-gray-400 col-span-full">No se encontraron clubs</p>';
         }
 
         // Modal Logic
@@ -1309,9 +1322,13 @@
         // Initial Load
         loadDashboard();
 
-        // Search Listener
+        // Search Listeners
         document.getElementById('student-search').addEventListener('input', (e) => {
             loadStudents(e.target.value);
+        });
+
+        document.getElementById('club-search').addEventListener('input', (e) => {
+            loadClubs(e.target.value);
         });
 
         // Utilities
