@@ -54,7 +54,10 @@
         }
 
         .page-container.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
         }
 
         .calendar-grid {
@@ -74,184 +77,528 @@
         .font-fill-1 {
             font-variation-settings: 'FILL' 1;
         }
+
+        /* Desktop specific adjustments */
+        @media (min-width: 768px) {
+            .desktop-sidebar {
+                display: flex !important;
+            }
+
+            .mobile-nav {
+                display: none !important;
+            }
+
+            .main-wrapper {
+                max-width: none !important;
+                flex-direction: row !important;
+                background-color: #f8f6f6;
+            }
+
+            .content-area {
+                flex: 1;
+                margin-left: 260px;
+                padding: 2rem;
+            }
+
+            .fab-container {
+                right: 3rem !important;
+                bottom: 3rem !important;
+            }
+
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+        }
+
+        /* Weekly Calendar Styles */
+        .calendar-week-header {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            border-bottom: 1px solid rgba(216, 72, 24, 0.1);
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .calendar-hour-col {
+            width: 60px;
+            border-right: 1px solid rgba(216, 72, 24, 0.05);
+        }
+
+        .calendar-grid-container {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            height: 1200px;
+            /* 15 hours * 80px */
+            position: relative;
+        }
+
+        .calendar-time-slot {
+            height: 80px;
+            border-bottom: 1px dashed rgba(216, 72, 24, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #97604e;
+            font-weight: 600;
+        }
+
+        .calendar-day-col {
+            border-right: 1px solid rgba(216, 72, 24, 0.05);
+            position: relative;
+        }
+
+        .class-block {
+            position: absolute;
+            left: 4px;
+            right: 4px;
+            border-radius: 8px;
+            padding: 6px;
+            font-size: 10px;
+            overflow: hidden;
+            border-left: 3px solid #d84818;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .class-block:hover {
+            z-index: 20;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(216, 72, 24, 0.15);
+        }
+
+        .class-block.grupal {
+            background: rgba(216, 72, 24, 0.1);
+        }
+
+        .class-block.privada {
+            background: #fff;
+            border: 1px solid rgba(216, 72, 24, 0.1);
+            border-left: 3px solid #d84818;
+        }
+
+        /* Responsive fixes for the calendar grid */
+        @media (max-width: 768px) {
+            .class-block {
+                left: 2px;
+                right: 2px;
+                padding: 2px;
+                font-size: 8px;
+            }
+
+            .btn-delete-class {
+                width: 14px;
+                height: 14px;
+                top: 1px;
+                right: 1px;
+            }
+
+            .btn-delete-class span {
+                font-size: 10px !important;
+            }
+        }
+
+
+        .btn-delete-class {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            color: #ef4444;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            z-index: 50;
+            cursor: pointer;
+            border: 1px solid #fee2e2;
+        }
+
+        .btn-delete-class:hover {
+            background: #fee2e2;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-[#1b110e] antialiased">
-    <div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl bg-white overflow-hidden">
 
-        <!-- DASHBOARD PAGE -->
-        <div id="dashboard-page" class="page-container active flex flex-col h-full overflow-hidden">
-            <header class="flex items-center bg-background-light p-4 pb-2 justify-between shrink-0">
-                <div class="flex size-12 shrink-0 items-center">
-                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20"
-                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBPVaCos61Ksfu45Qgm3prI2VSxM-x7MuC5_WiMeMOGTsvtWWKLOsfDimG6kzsIJ_BGNAJdltPZCeuMnW4v8hJxXYl50_6nYMX7p3T4ysHyODTZOu-FKYh2uS1xULQ8p0BDFjV5PUsRBVMga73mEzERIaLvkB-OEi8aOnrrgir-8q1FJnhW3TN8kXI4BlnQ8XIKW4E_zOjj_m3nkekwCP4QqJlJi8H-Q0nXTN5bC8itU2GdSLvsd_cGc7dCqQtBunVx_hgS6aw2o0xH");'>
-                    </div>
-                </div>
-                <div class="flex-1 px-3">
-                    <p class="text-primary/70 text-xs font-semibold uppercase tracking-wider">Bienvenido</p>
-                    <h2 class="text-[#1b110e] text-xl font-bold leading-tight tracking-[-0.015em]">¡Hola, Alain!</h2>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <span class="material-symbols-outlined text-xl">notifications</span>
-                    </button>
-                </div>
-            </header>
-            <main class="flex-1 overflow-y-auto pb-24">
-                <div class="p-4">
-                    <div
-                        class="relative flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(216,72,24,0.12)] bg-white overflow-hidden border border-primary/5">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
-                        <div
-                            class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 p-5 relative z-10">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="material-symbols-outlined text-primary text-sm">calendar_today</span>
-                                <p class="text-primary text-xs font-bold uppercase tracking-[0.1em]">Resumen Diario</p>
-                            </div>
-                            <h1 id="today-classes-count"
-                                class="text-[#1b110e] text-3xl font-bold leading-tight tracking-[-0.015em]">Cargando...
-                            </h1>
-                            <div id="next-class-preview" class="mt-4 flex flex-col gap-3">
-                                <!-- Next class will be dynamic -->
-                            </div>
-                        </div>
-                        <div class="w-full bg-center bg-no-repeat h-32 bg-cover"
-                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDSm_mQh0sRy1kq8UgQyMiIa0uNiRCj0jpqwL8lqLgTVYpsyr0qTBg14H8H__WbWr7BBM_ftZ6glN-6KkMJd9ghDPLLTZlYbvs6dfAfKYYP-JztiP1vvA85SucWheMMmpDmmQA0w9ySf27tGimfRHzbeoAl9jkjKlE0OUPMUn2f_ZAi3OfLrOZ2XTZC3acpqhA9A9gJyxBzE7A_HtuJ4uWbT77kzLDRwW2U0WQho7vJYpLfN2GYPRvO8BSX7oAkHf4lnuDtu_HeXRLp");'>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between px-4 pb-3 pt-4">
-                    <h2 class="text-[#1b110e] text-lg font-bold leading-tight tracking-[-0.015em]">Próximas Clases</h2>
-                    <button onclick="router.navigate('calendar')"
-                        class="text-primary text-sm font-bold flex items-center gap-1">
-                        Ver todo <span class="material-symbols-outlined text-sm">chevron_right</span>
-                    </button>
-                </div>
-                <div id="upcoming-classes-list" class="flex flex-col gap-3 px-4">
-                    <!-- Dynamic classes -->
-                </div>
-                <div class="grid grid-cols-2 gap-4 p-4">
-                    <div class="bg-primary/5 border border-primary/10 p-4 rounded-xl">
-                        <p class="text-primary/60 text-[10px] font-bold uppercase tracking-wider">Horas Semanales</p>
-                        <p id="weekly-hours" class="text-primary text-2xl font-bold">--h</p>
-                    </div>
-                    <div class="bg-primary/5 border border-primary/10 p-4 rounded-xl">
-                        <p class="text-primary/60 text-[10px] font-bold uppercase tracking-wider">Estudiantes</p>
-                        <p id="total-students" class="text-primary text-2xl font-bold">--</p>
-                    </div>
-                </div>
-            </main>
+    <!-- DESKTOP SIDEBAR -->
+    <aside
+        class="desktop-sidebar fixed left-0 top-0 bottom-0 w-[260px] bg-white border-r border-primary/5 hidden flex-col z-40">
+        <div class="p-6 flex items-center gap-3">
+            <div class="bg-primary p-2 rounded-xl">
+                <span class="material-symbols-outlined text-white text-2xl">sports_tennis</span>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight text-[#1b110e]">Tennis Coach</h1>
         </div>
 
-        <!-- CALENDAR PAGE -->
-        <div id="calendar-page" class="page-container flex flex-col h-full overflow-hidden">
-            <header class="flex items-center bg-white p-4 pb-2 justify-between border-b border-gray-100">
-                <div class="text-primary flex size-10 shrink-0 items-center justify-center">
-                    <span class="material-symbols-outlined text-3xl">sports_tennis</span>
-                </div>
-                <h2 class="text-[#1b110e] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
-                    Calendario</h2>
-                <div class="flex w-10"></div>
-            </header>
-            <main class="flex-1 overflow-y-auto pb-24">
-                <!-- Simple Agenda View for now -->
-                <div id="calendar-agenda" class="p-4 space-y-4">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 id="selected-date-label" class="text-lg font-bold">Hoy</h3>
-                    </div>
-                    <div id="day-agenda-list" class="space-y-4">
-                        <!-- Dynamic agenda -->
-                    </div>
-                </div>
-            </main>
-        </div>
-
-        <!-- STUDENTS PAGE -->
-        <div id="students-page" class="page-container flex flex-col h-full overflow-hidden">
-            <header class="bg-white px-4 py-4 border-b border-primary/10">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <div class="bg-primary p-1.5 rounded-lg">
-                            <span class="material-symbols-outlined text-white text-2xl">sports_tennis</span>
-                        </div>
-                        <h1 class="text-xl font-bold tracking-tight text-[#1b110e]">Mis Alumnos</h1>
-                    </div>
-                </div>
-                <div class="relative">
-                    <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60">search</span>
-                    <input id="student-search"
-                        class="w-full bg-background-light border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400"
-                        placeholder="Buscar alumno..." type="text" />
-                </div>
-            </header>
-            <main id="students-list" class="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-background-light pb-24">
-                <!-- Dynamic students -->
-            </main>
-        </div>
-
-        <!-- CLUBS PAGE -->
-        <div id="clubs-page" class="page-container flex flex-col h-full overflow-hidden">
-            <header class="bg-white px-4 py-4 border-b border-primary/10">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <div class="bg-primary p-1.5 rounded-lg">
-                            <span class="material-symbols-outlined text-white text-2xl">location_on</span>
-                        </div>
-                        <h1 class="text-xl font-bold tracking-tight text-[#1b110e]">Mis Clubs</h1>
-                    </div>
-                </div>
-            </header>
-            <main id="clubs-list" class="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-background-light pb-24">
-                <!-- Dynamic clubs -->
-            </main>
-        </div>
-
-        <!-- Floating Action Button -->
-        <div class="absolute bottom-20 right-4 z-20">
-            <button id="add-btn"
-                class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/40 transition-transform active:scale-90 hover:scale-105">
-                <span class="material-symbols-outlined text-3xl">add</span>
-            </button>
-        </div>
-
-        <!-- Bottom Navigation Bar -->
-        <nav
-            class="absolute bottom-0 left-0 right-0 z-30 flex gap-2 border-t border-primary/5 bg-white/95 backdrop-blur-md px-6 pb-6 pt-3 h-20">
+        <nav class="flex-1 px-4 py-6 space-y-2">
             <a onclick="router.navigate('dashboard')"
-                class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-primary"
-                href="javascript:void(0)" data-page="dashboard">
-                <div class="flex h-6 items-center justify-center">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">dashboard</span>
-                </div>
-                <p class="text-[10px] font-bold leading-normal tracking-wide">DASHBOARD</p>
+                class="nav-item-desktop group flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:bg-primary/5"
+                data-page="dashboard">
+                <span
+                    class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">dashboard</span>
+                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Dashboard</span>
             </a>
             <a onclick="router.navigate('calendar')"
-                class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
-                href="javascript:void(0)" data-page="calendar">
-                <div class="flex h-6 items-center justify-center">
-                    <span class="material-symbols-outlined">calendar_month</span>
-                </div>
-                <p class="text-[10px] font-bold leading-normal tracking-wide">CALENDARIO</p>
+                class="nav-item-desktop group flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:bg-primary/5"
+                data-page="calendar">
+                <span
+                    class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">calendar_month</span>
+                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Calendario</span>
             </a>
             <a onclick="router.navigate('students')"
-                class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
-                href="javascript:void(0)" data-page="students">
-                <div class="flex h-6 items-center justify-center">
-                    <span class="material-symbols-outlined">group</span>
-                </div>
-                <p class="text-[10px] font-bold leading-normal tracking-wide">ALUMNOS</p>
+                class="nav-item-desktop group flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:bg-primary/5"
+                data-page="students">
+                <span
+                    class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">group</span>
+                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Alumnos</span>
             </a>
             <a onclick="router.navigate('clubs')"
-                class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
-                href="javascript:void(0)" data-page="clubs">
-                <div class="flex h-6 items-center justify-center">
-                    <span class="material-symbols-outlined">location_on</span>
-                </div>
-                <p class="text-[10px] font-bold leading-normal tracking-wide">CLUBS</p>
+                class="nav-item-desktop group flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:bg-primary/5"
+                data-page="clubs">
+                <span
+                    class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">location_on</span>
+                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Mis Clubs</span>
+            </a>
+            <a onclick="router.navigate('finance')"
+                class="nav-item-desktop group flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:bg-primary/5"
+                data-page="finance">
+                <span
+                    class="material-symbols-outlined text-gray-400 group-[.active]:text-primary group-[.active]:font-fill-1">payments</span>
+                <span class="font-semibold text-gray-500 group-[.active]:text-[#1b110e]">Finanzas</span>
             </a>
         </nav>
+
+        <div class="p-6 border-t border-primary/5">
+            <div class="flex items-center gap-3 p-3 bg-primary/5 rounded-2xl">
+                <div class="size-10 rounded-full border-2 border-primary/20 bg-cover bg-center shadow-sm"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBPVaCos61Ksfu45Qgm3prI2VSxM-x7MuC5_WiMeMOGTsvtWWKLOsfDimG6kzsIJ_BGNAJdltPZCeuMnW4v8hJxXYl50_6nYMX7p3T4ysHyODTZOu-FKYh2uS1xULQ8p0BDFjV5PUsRBVMga73mEzERIaLvkB-OEi8aOnrrgir-8q1FJnhW3TN8kXI4BlnQ8XIKW4E_zOjj_m3nkekwCP4QqJlJi8H-Q0nXTN5bC8itU2GdSLvsd_cGc7dCqQtBunVx_hgS6aw2o0xH");'>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-[#1b110e] truncate">Alain</p>
+                    <p class="text-[10px] text-primary/70 font-bold uppercase tracking-wider">Coach Pro</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div
+        class="main-wrapper relative flex min-h-screen w-full flex-col max-w-md mx-auto md:max-w-none md:flex-row shadow-2xl md:shadow-none bg-white overflow-hidden transition-all duration-300">
+
+        <!-- CONTENT AREA -->
+        <main class="content-area flex flex-col flex-1 h-full overflow-hidden relative">
+
+            <!-- DASHBOARD PAGE -->
+            <div id="dashboard-page" class="page-container active">
+                <header
+                    class="flex items-center bg-background-light md:bg-transparent p-4 pb-2 justify-between shrink-0 md:mb-6">
+                    <div class="md:hidden flex size-12 shrink-0 items-center">
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20"
+                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBPVaCos61Ksfu45Qgm3prI2VSxM-x7MuC5_WiMeMOGTsvtWWKLOsfDimG6kzsIJ_BGNAJdltPZCeuMnW4v8hJxXYl50_6nYMX7p3T4ysHyODTZOu-FKYh2uS1xULQ8p0BDFjV5PUsRBVMga73mEzERIaLvkB-OEi8aOnrrgir-8q1FJnhW3TN8kXI4BlnQ8XIKW4E_zOjj_m3nkekwCP4QqJlJi8H-Q0nXTN5bC8itU2GdSLvsd_cGc7dCqQtBunVx_hgS6aw2o0xH");'>
+                        </div>
+                    </div>
+                    <div class="flex-1 md:flex-initial px-3 md:px-0">
+                        <p class="text-primary/70 text-xs font-semibold uppercase tracking-wider md:hidden">Bienvenido
+                        </p>
+                        <h2 class="text-[#1b110e] text-xl md:text-3xl font-bold leading-tight tracking-[-0.015em]">
+                            Dashboard</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button
+                            class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                            <span class="material-symbols-outlined text-xl">notifications</span>
+                        </button>
+                        <button
+                            class="hidden md:flex bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                            onclick="openAddClassModal()">
+                            Programar Clase
+                        </button>
+                    </div>
+                </header>
+                <div class="flex-1 overflow-y-auto pb-24 md:pb-8 no-scrollbar">
+                    <div class="dashboard-grid px-4 md:px-0">
+                        <!-- Left Column / Hero -->
+                        <div class="mb-6 md:mb-0">
+                            <div
+                                class="relative flex flex-col items-stretch justify-start rounded-2xl shadow-[0_4px_24px_rgba(216,72,24,0.08)] bg-white overflow-hidden border border-primary/5 h-full">
+                                <div class="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full -mr-24 -mt-24">
+                                </div>
+                                <div
+                                    class="flex w-full grow flex-col items-stretch justify-center gap-1 p-6 relative z-10">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span
+                                            class="material-symbols-outlined text-primary text-sm font-fill-1">calendar_today</span>
+                                        <p class="text-primary text-xs font-bold uppercase tracking-[0.15em]">Hoy</p>
+                                    </div>
+                                    <h1 id="today-classes-count"
+                                        class="text-[#1b110e] text-3xl md:text-4xl font-extrabold leading-tight tracking-[-0.02em]">
+                                        Cargando...
+                                    </h1>
+                                    <div id="next-class-preview" class="mt-6 flex flex-col gap-3">
+                                        <!-- Next class will be dynamic -->
+                                    </div>
+                                </div>
+                                <div class="w-full bg-center bg-no-repeat h-40 bg-cover opacity-90"
+                                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDSm_mQh0sRy1kq8UgQyMiIa0uNiRCj0jpqwL8lqLgTVYpsyr0qTBg14H8H__WbWr7BBM_ftZ6glN-6KkMJd9ghDPLLTZlYbvs6dfAfKYYP-JztiP1vvA85SucWheMMmpDmmQA0w9ySf27tGimfRHzbeoAl9jkjKlE0OUPMUn2f_ZAi3OfLrOZ2XTZC3acpqhA9A9gJyxBzE7A_HtuJ4uWbT77kzLDRwW2U0WQho7vJYpLfN2GYPRvO8BSX7oAkHf4lnuDtu_HeXRLp");'>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column / Upcoming -->
+                        <div>
+                            <div class="flex items-center justify-between pb-4">
+                                <h2 class="text-[#1b110e] text-lg font-bold leading-tight tracking-[-0.015em]">Próximas
+                                    Clases</h2>
+                                <button onclick="router.navigate('calendar')"
+                                    class="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                    Ver todo <span class="material-symbols-outlined text-sm">chevron_right</span>
+                                </button>
+                            </div>
+                            <div id="upcoming-classes-list" class="flex flex-col gap-3">
+                                <!-- Dynamic classes -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Section -->
+                    <div class="stats-grid grid grid-cols-2 gap-4 p-4 md:px-0 md:pt-8">
+                        <div
+                            class="bg-white border border-primary/5 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span
+                                    class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg text-xl">payments</span>
+                                <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Ingresos
+                                    Semanales</p>
+                            </div>
+                            <p id="weekly-income" class="text-[#1b110e] text-3xl font-extrabold">0.00€</p>
+                        </div>
+                        <div
+                            class="bg-white border border-primary/5 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span
+                                    class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg text-xl">schedule</span>
+                                <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Horas Semanales
+                                </p>
+                            </div>
+                            <p id="weekly-hours" class="text-[#1b110e] text-3xl font-extrabold">0h</p>
+                        </div>
+                        <div
+                            class="bg-white border border-primary/5 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow col-span-2 md:col-span-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span
+                                    class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg text-xl">group</span>
+                                <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Estudiantes</p>
+                            </div>
+                            <p id="total-students" class="text-[#1b110e] text-3xl font-extrabold">--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CALENDAR PAGE -->
+            <div id="calendar-page" class="page-container">
+                <header
+                    class="flex items-center bg-white md:bg-transparent p-4 pb-2 justify-between border-b md:border-none border-gray-100 md:mb-4">
+                    <div class="md:hidden text-primary flex size-10 shrink-0 items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl">sports_tennis</span>
+                    </div>
+                    <h2 id="calendar-title"
+                        class="text-[#1b110e] text-lg md:text-3xl font-bold leading-tight tracking-[-0.015em] flex-1 md:text-left text-center">
+                        Calendario</h2>
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeWeek(-1)"
+                            class="p-2 hover:bg-primary/5 rounded-lg transition-colors"><span
+                                class="material-symbols-outlined">chevron_left</span></button>
+                        <button onclick="changeWeek(1)"
+                            class="p-2 hover:bg-primary/5 rounded-lg transition-colors"><span
+                                class="material-symbols-outlined">chevron_right</span></button>
+                    </div>
+                </header>
+
+                <main
+                    class="flex-1 overflow-hidden flex flex-col bg-white md:rounded-3xl shadow-sm border border-primary/5 mx-0 md:mx-0">
+                    <!-- Days Header -->
+                    <div id="calendar-week-header" class="calendar-week-header shrink-0">
+                        <div class="calendar-hour-col"></div>
+                        <!-- Days dynamically injected -->
+                    </div>
+
+                    <!-- Grid Body -->
+                    <div class="flex-1 overflow-y-auto no-scrollbar relative bg-white" id="calendar-grid-body">
+                        <div id="calendar-grid-content" class="calendar-grid-container">
+                            <!-- Hours and Slots dynamically injected -->
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- STUDENTS PAGE -->
+            <div id="students-page" class="page-container">
+                <header
+                    class="bg-white md:bg-transparent px-4 py-4 md:px-0 border-b md:border-none border-primary/10 md:mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-primary p-1.5 rounded-lg md:hidden">
+                                <span class="material-symbols-outlined text-white text-2xl">sports_tennis</span>
+                            </div>
+                            <h1 class="text-xl md:text-3xl font-bold tracking-tight text-[#1b110e]">Mis Alumnos</h1>
+                        </div>
+                        <button
+                            class="hidden md:flex bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                            onclick="openModal('add-student-modal')">
+                            Añadir Alumno
+                        </button>
+                    </div>
+                    <div class="relative max-w-md">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60">search</span>
+                        <input id="student-search"
+                            class="w-full bg-white md:bg-white border md:border-primary/10 rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400 shadow-sm"
+                            placeholder="Buscar alumno..." type="text" />
+                    </div>
+                </header>
+                <main id="students-list"
+                    class="flex-1 overflow-y-auto px-4 py-4 md:px-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-background-light md:bg-transparent pb-24 no-scrollbar">
+                    <!-- Dynamic students -->
+                </main>
+            </div>
+
+            <!-- CLUBS PAGE -->
+            <div id="clubs-page" class="page-container">
+                <header
+                    class="bg-white md:bg-transparent px-4 py-4 md:px-0 border-b md:border-none border-primary/10 md:mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-primary p-1.5 rounded-lg md:hidden">
+                                <span class="material-symbols-outlined text-white text-2xl">location_on</span>
+                            </div>
+                            <h1 class="text-xl md:text-3xl font-bold tracking-tight text-[#1b110e]">Mis Clubs</h1>
+                        </div>
+                        <button
+                            class="hidden md:flex bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                            onclick="openModal('add-club-modal')">
+                            Añadir Club
+                        </button>
+                    </div>
+                </header>
+                <main id="clubs-list"
+                    class="flex-1 overflow-y-auto px-4 py-4 md:px-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-background-light md:bg-transparent pb-24 no-scrollbar">
+                    <!-- Dynamic clubs -->
+                </main>
+            </div>
+
+            <!-- FINANCE PAGE -->
+            <div id="finance-page" class="page-container">
+                <header
+                    class="bg-white md:bg-transparent px-4 py-4 md:px-0 border-b md:border-none border-primary/10 md:mb-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-primary p-1.5 rounded-lg md:hidden">
+                                <span class="material-symbols-outlined text-white text-2xl">payments</span>
+                            </div>
+                            <h1 class="text-xl md:text-3xl font-bold tracking-tight text-[#1b110e]">Resumen de Ganancias
+                            </h1>
+                        </div>
+                        <div class="flex bg-gray-100 p-1 rounded-xl">
+                            <button id="mode-week" onclick="setFinanceMode('week')"
+                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-primary">Semana</button>
+                            <button id="mode-month" onclick="setFinanceMode('month')"
+                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-500">Mes</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider" id="finance-period-label">
+                            Cargando periodo...</p>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeFinancePeriod(-1)" class="p-1 hover:bg-primary/5 rounded-lg"><span
+                                    class="material-symbols-outlined text-sm">chevron_left</span></button>
+                            <button onclick="changeFinancePeriod(1)" class="p-1 hover:bg-primary/5 rounded-lg"><span
+                                    class="material-symbols-outlined text-sm">chevron_right</span></button>
+                        </div>
+                    </div>
+                </header>
+                <main class="flex-1 overflow-y-auto px-4 py-4 md:px-0 pb-24 no-scrollbar">
+                    <!-- Finance Stats -->
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="bg-white border border-primary/5 p-5 rounded-2xl shadow-sm">
+                            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Total Cobrado
+                            </p>
+                            <p id="finance-total-paid" class="text-green-600 text-3xl font-extrabold">0.00€</p>
+                        </div>
+                        <div class="bg-white border border-primary/5 p-5 rounded-2xl shadow-sm">
+                            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Pendiente</p>
+                            <p id="finance-total-pending" class="text-primary text-3xl font-extrabold">0.00€</p>
+                        </div>
+                    </div>
+
+                    <h2 class="text-[#1b110e] text-lg font-bold mb-4">Ganancias por Alumno</h2>
+                    <div id="finance-student-list" class="space-y-3">
+                        <!-- Dynamic list -->
+                    </div>
+                </main>
+            </div>
+
+            <!-- Floating Action Button (Mobile) -->
+            <div class="fab-container absolute bottom-24 right-6 z-20 md:hidden">
+                <button id="add-btn"
+                    class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/40 transition-transform active:scale-90 hover:scale-105">
+                    <span class="material-symbols-outlined text-3xl">add</span>
+                </button>
+            </div>
+
+            <!-- Bottom Navigation Bar (Mobile) -->
+            <nav
+                class="mobile-nav absolute bottom-0 left-0 right-0 z-30 flex gap-2 border-t border-primary/5 bg-white/95 backdrop-blur-md px-6 pb-6 pt-3 h-20 md:hidden">
+                <a onclick="router.navigate('dashboard')"
+                    class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-primary"
+                    href="javascript:void(0)" data-page="dashboard">
+                    <div class="flex h-6 items-center justify-center">
+                        <span class="material-symbols-outlined"
+                            style="font-variation-settings: 'FILL' 1">dashboard</span>
+                    </div>
+                    <p class="text-[10px] font-bold leading-normal tracking-wide">DASHBOARD</p>
+                </a>
+                <a onclick="router.navigate('calendar')"
+                    class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
+                    href="javascript:void(0)" data-page="calendar">
+                    <div class="flex h-6 items-center justify-center">
+                        <span class="material-symbols-outlined">calendar_month</span>
+                    </div>
+                    <p class="text-[10px] font-bold leading-normal tracking-wide">CALENDARIO</p>
+                </a>
+                <a onclick="router.navigate('students')"
+                    class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
+                    href="javascript:void(0)" data-page="students">
+                    <div class="flex h-6 items-center justify-center">
+                        <span class="material-symbols-outlined">group</span>
+                    </div>
+                    <p class="text-[10px] font-bold leading-normal tracking-wide">ALUMNOS</p>
+                </a>
+                <a onclick="router.navigate('finance')"
+                    class="nav-item flex flex-1 flex-col items-center justify-center gap-1 text-[#97604e]/60 hover:text-primary transition-colors"
+                    href="javascript:void(0)" data-page="finance">
+                    <div class="flex h-6 items-center justify-center">
+                        <span class="material-symbols-outlined">payments</span>
+                    </div>
+                    <p class="text-[10px] font-bold leading-normal tracking-wide">FINANZAS</p>
+                </a>
+            </nav>
+        </main>
     </div>
 
     <!-- Modals -->
@@ -263,6 +610,8 @@
                 <input id="new-student-name" type="text" placeholder="Nombre completo"
                     class="w-full border-gray-200 rounded-xl px-4 py-3" />
                 <input id="new-student-level" type="text" placeholder="Nivel (ej. Intermedio)"
+                    class="w-full border-gray-200 rounded-xl px-4 py-3" />
+                <input id="new-student-phone" type="tel" placeholder="Teléfono (ej. 34600000000)"
                     class="w-full border-gray-200 rounded-xl px-4 py-3" />
                 <div class="flex gap-3 mt-6">
                     <button onclick="closeModal('add-student-modal')"
@@ -315,6 +664,11 @@
                     <label class="text-xs font-bold text-gray-400 uppercase">Club</label>
                     <select id="class-club-id" class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1"></select>
                 </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Precio (€)</label>
+                    <input id="class-price" type="number" placeholder="0.00" step="0.5"
+                        class="w-full border-gray-200 rounded-xl px-4 py-3 mt-1" />
+                </div>
                 <div class="flex gap-3 mt-6">
                     <button onclick="closeModal('add-class-modal')"
                         class="flex-1 py-3 rounded-xl border border-gray-200 font-bold">Cancelar</button>
@@ -356,7 +710,10 @@
             alumnos: [],
             clases: [],
             clubes: [],
-            currentPage: 'dashboard'
+            currentPage: 'dashboard',
+            currentWeekStart: new Date(),
+            financeDate: new Date(),
+            financeMode: 'week' // 'week' or 'month'
         };
 
         // Router
@@ -366,25 +723,37 @@
                 document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
                 document.getElementById(`${page}-page`).classList.add('active');
 
-                // Update nav styles
+                // Update mobile nav styles
                 document.querySelectorAll('.nav-item').forEach(item => {
                     const isSelected = item.dataset.page === page;
                     item.classList.toggle('text-primary', isSelected);
                     item.classList.toggle('text-[#97604e]/60', !isSelected);
                     const icon = item.querySelector('.material-symbols-outlined');
-                    icon.style.fontVariationSettings = isSelected ? "'FILL' 1" : "'FILL' 0";
+                    if (icon) icon.style.fontVariationSettings = isSelected ? "'FILL' 1" : "'FILL' 0";
+                });
+
+                // Update desktop sidebar styles
+                document.querySelectorAll('.nav-item-desktop').forEach(item => {
+                    const isSelected = item.dataset.page === page;
+                    if (isSelected) {
+                        item.classList.add('active', 'bg-primary/5');
+                        item.classList.remove('text-gray-500');
+                    } else {
+                        item.classList.remove('active', 'bg-primary/5');
+                    }
                 });
 
                 if (page === 'dashboard') loadDashboard();
                 if (page === 'calendar') loadCalendar();
                 if (page === 'students') loadStudents();
                 if (page === 'clubs') loadClubs();
+                if (page === 'finance') loadFinance();
             }
         };
 
         // Data Loading
         async function loadDashboard() {
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date().toLocaleDateString('en-CA');
 
             // Get today's classes
             const { data: todayClasses } = await _supabase
@@ -434,11 +803,18 @@
                             <span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-tighter">${cls.alumnos.nivel || 'Nivel'}</span>
                         </div>
                         <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">${cls.clubes?.nombre || ''}</p>
-                        <p class="text-primary/70 text-xs font-medium flex items-center gap-1 mt-0.5" title="${cls.fecha}">
-                            <span class="material-symbols-outlined text-xs">schedule</span> ${cls.hora_inicio.substring(0, 5)} - ${cls.hora_fin.substring(0, 5)}
+                        <p class="text-primary/70 text-xs font-medium flex items-center justify-between gap-1 mt-0.5">
+                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">schedule</span> ${cls.hora_inicio.substring(0, 5)} - ${cls.hora_fin.substring(0, 5)}</span>
+                            ${cls.precio ? `<span class="font-bold text-[#1b110e]">${cls.precio}€</span>` : ''}
                         </p>
                     </div>
-                    <div class="shrink-0">
+                    <div class="shrink-0 flex items-center gap-2">
+                        ${cls.alumnos.telefono ? `
+                            <button onclick="sendWhatsApp('${cls.alumnos.telefono}', 'Hola ${cls.alumnos.nombre}, te escribo para confirmar tu clase de tenis de hoy a las ${cls.hora_inicio.substring(0, 5)} en ${cls.clubes?.nombre || 'el club'}.')" 
+                                class="flex items-center justify-center rounded-lg h-9 w-9 bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-lg">message</span>
+                            </button>
+                        ` : ''}
                         <button class="flex items-center justify-center rounded-lg h-9 px-4 ${cls.pagado ? 'bg-green-500' : 'bg-primary'} text-white text-xs font-bold transition-all active:scale-95 shadow-md">
                             ${cls.pagado ? 'Pagado' : 'Check In'}
                         </button>
@@ -446,7 +822,34 @@
                 </div>
             `).join('') || '';
 
-            // Stats
+            // Stats logic (Weekly)
+            const weekStart = getStartOfWeek(new Date());
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+
+            const { data: weekData } = await _supabase
+                .from('clases')
+                .select('precio, hora_inicio, hora_fin')
+                .gte('fecha', weekStart.toLocaleDateString('en-CA'))
+                .lte('fecha', weekEnd.toLocaleDateString('en-CA'));
+
+            let totalIncome = 0;
+            let totalHours = 0;
+
+            if (weekData) {
+                weekData.forEach(c => {
+                    if (c.precio) totalIncome += parseFloat(c.precio);
+
+                    const start = c.hora_inicio.split(':');
+                    const end = c.hora_fin.split(':');
+                    const duration = (parseInt(end[0]) + parseInt(end[1]) / 60) - (parseInt(start[0]) + parseInt(start[1]) / 60);
+                    totalHours += duration;
+                });
+            }
+
+            document.getElementById('weekly-income').innerText = totalIncome.toFixed(2) + '€';
+            document.getElementById('weekly-hours').innerText = Math.round(totalHours) + 'h';
+
             const { count: studentCount } = await _supabase.from('alumnos').select('*', { count: 'exact', head: true });
             document.getElementById('total-students').innerText = studentCount;
         }
@@ -473,7 +876,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex gap-1">
+                        <div class="flex gap-2">
+                            ${s.telefono ? `
+                                <button onclick="sendWhatsApp('${s.telefono}')" class="p-2 text-green-600 bg-green-500/10 rounded-lg hover:bg-green-500 hover:text-white transition-colors">
+                                    <span class="material-symbols-outlined text-xl">message</span>
+                                </button>
+                            ` : ''}
                             <button class="p-2 text-primary bg-primary/5 rounded-lg">
                                 <span class="material-symbols-outlined text-xl">call</span>
                             </button>
@@ -483,35 +891,227 @@
             `).join('') || '';
         }
 
-        async function loadCalendar() {
-            const today = new Date().toISOString().split('T')[0];
-            const { data: agenda } = await _supabase
-                .from('clases')
-                .select('*, alumnos(nombre, nivel), clubes(nombre)')
-                .eq('fecha', today)
-                .order('hora_inicio');
+        function getStartOfWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
 
-            const list = document.getElementById('day-agenda-list');
-            list.innerHTML = agenda?.map(cls => `
-                <div class="flex gap-4 p-3 rounded-xl ${cls.tipo === 'Grupal' ? 'bg-primary/10 border-l-4 border-primary' : 'bg-white border border-gray-100 shadow-sm border-l-4 border-primary/30'}">
-                    <div class="flex flex-col items-center justify-center min-w-[60px] py-1">
-                        <span class="text-sm font-bold text-primary">${cls.hora_inicio.substring(0, 5)}</span>
-                        <span class="text-[10px] text-primary/70 font-medium">60 MIN</span>
+        function changeWeek(direction) {
+            state.currentWeekStart.setDate(state.currentWeekStart.getDate() + (direction * 7));
+            loadCalendar();
+        }
+
+        async function loadCalendar() {
+            const weekStart = getStartOfWeek(state.currentWeekStart);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+
+            const startStr = weekStart.toLocaleDateString('en-CA');
+            const endStr = weekEnd.toLocaleDateString('en-CA');
+
+            // Update Header
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            document.getElementById('calendar-title').innerText = `Semana ${weekStart.getDate()} ${months[weekStart.getMonth()]} - ${weekEnd.getDate()} ${months[weekEnd.getMonth()]}`;
+
+            const header = document.getElementById('calendar-week-header');
+            const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+            header.innerHTML = '<div class="calendar-hour-col"></div>' + days.map((day, i) => {
+                const d = new Date(weekStart);
+                d.setDate(weekStart.getDate() + i);
+                const isToday = d.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
+                return `
+                    <div class="flex flex-col items-center py-2 ${isToday ? 'bg-primary/5' : ''}">
+                        <span class="text-[10px] font-bold text-gray-400">${day}</span>
+                        <span class="text-xs font-bold ${isToday ? 'text-primary' : 'text-[#1b110e]'}">${d.getDate()}</span>
                     </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between items-start">
-                            <h4 class="font-bold text-sm text-[#1b110e]">${cls.alumnos.nombre}</h4>
-                            <span class="material-symbols-outlined text-primary text-sm">${cls.tipo === 'Grupal' ? 'groups' : 'person'}</span>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">${cls.pista || 'Sin pista'} • ${cls.clubes?.nombre || 'Club'}</p>
-                        <div class="flex items-center gap-2 mt-2">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${cls.pagado ? 'bg-primary text-white' : 'bg-yellow-100 text-yellow-700'}">
-                                ${cls.pagado ? 'PAGADO' : 'PENDIENTE'}
+                `;
+            }).join('');
+
+            // Setup Grid Content
+            const gridContent = document.getElementById('calendar-grid-content');
+            gridContent.innerHTML = '';
+
+            // Hour slots (8 AM to 10 PM to match user's common view)
+            const startHour = 8;
+            const endHour = 22;
+            const slotHeight = 80;
+
+            // Render Hours and Background Slots with explicit grid rows
+            let slotsHtml = '';
+            for (let h = startHour; h <= endHour; h++) {
+                const rowIndex = h - startHour + 1;
+                slotsHtml += `<div class="calendar-time-slot" style="grid-row: ${rowIndex}">${h}:00</div>`;
+                for (let d = 0; d < 7; d++) {
+                    const colIndex = d + 2;
+                    slotsHtml += `<div class="calendar-day-col" id="col-${d}-hour-${h}" style="grid-row: ${rowIndex}; grid-column: ${colIndex}"></div>`;
+                }
+            }
+            gridContent.innerHTML = slotsHtml;
+
+            // Fetch classes for this week
+            const { data: weekClasses } = await _supabase
+                .from('clases')
+                .select('*, alumnos(nombre, nivel, telefono), clubes(nombre)')
+                .gte('fecha', startStr)
+                .lte('fecha', endStr);
+
+            // Render individual class blocks
+            if (weekClasses) {
+                weekClasses.forEach(cls => {
+                    // Correct date parsing for local timezone
+                    const [y, m, dayOfMonth] = cls.fecha.split('-').map(Number);
+                    const clsDate = new Date(y, m - 1, dayOfMonth);
+
+                    // Adjust dayIndex (0 = Monday, 1 = Tuesday...)
+                    let dayIndex = clsDate.getDay() - 1;
+                    if (dayIndex === -1) dayIndex = 6;
+
+                    const startParts = cls.hora_inicio.split(':');
+                    const endParts = cls.hora_fin.split(':');
+
+                    const startH = parseInt(startParts[0]);
+                    const startM = parseInt(startParts[1]);
+                    const endH = parseInt(endParts[0]);
+                    const endM = parseInt(endParts[1]);
+
+                    // Only render if within our display range
+                    if (startH < startHour || startH > endHour) return;
+
+                    const duration = (endH + endM / 60) - (startH + startM / 60);
+                    const height = duration * slotHeight;
+                    const topOffset = (startM / 60) * slotHeight;
+
+                    const block = document.createElement('div');
+                    block.className = `class-block ${cls.tipo.toLowerCase()} ${cls.pagado ? 'opacity-80' : ''}`;
+
+                    // topOffset handles minutes (e.g. 14:30) within the hour cell
+                    block.style.top = `${topOffset}px`;
+                    block.style.height = `${height}px`;
+                    block.style.zIndex = "20";
+
+                    block.innerHTML = `
+                        <button class="btn-delete-class" onclick="event.stopPropagation(); deleteClass('${cls.id}')" title="Cancelar clase">
+                            <span class="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                        <div class="font-bold truncate pr-6">${cls.alumnos.nombre}</div>
+                        <div class="opacity-70 truncate text-[10px]">${cls.hora_inicio.substring(0, 5)} - ${cls.clubes?.nombre || ''}</div>
+                        <div class="font-bold mt-1 text-primary">${cls.precio ? cls.precio + '€' : ''}</div>
+                        <div class="absolute bottom-2 right-2 flex gap-1">
+                            ${cls.alumnos.telefono ? `<span onclick="event.stopPropagation(); sendWhatsApp('${cls.alumnos.telefono}')" class="material-symbols-outlined text-[14px] text-green-600 cursor-pointer hover:scale-125 transition-transform" title="Enviar WhatsApp">message</span>` : ''}
+                            <span onclick="event.stopPropagation(); togglePaid('${cls.id}', ${cls.pagado})" 
+                                  class="material-symbols-outlined text-[14px] ${cls.pagado ? 'text-green-600 font-fill-1' : 'text-gray-300 hover:text-green-400'} cursor-pointer transition-all hover:scale-125" 
+                                  title="${cls.pagado ? 'Marcar como pendiente' : 'Marcar como pagado'}">
+                                check_circle
                             </span>
                         </div>
+                    `;
+
+                    const cellId = `col-${dayIndex}-hour-${startH}`;
+                    const cell = document.getElementById(cellId);
+                    if (cell) {
+                        cell.appendChild(block);
+                    }
+
+                });
+            }
+
+
+            // Auto scroll to current time if viewing current week
+            const isCurrentWeek = new Date() >= weekStart && new Date() <= weekEnd;
+            if (isCurrentWeek) {
+                const now = new Date();
+                const currentHour = now.getHours();
+                if (currentHour >= startHour && currentHour <= endHour) {
+                    const scrollPos = (currentHour - startHour) * slotHeight - 100;
+                    document.getElementById('calendar-grid-body').scrollTop = scrollPos;
+                }
+            }
+        }
+
+        async function togglePaid(id, currentStatus) {
+            const { error } = await _supabase
+                .from('clases')
+                .update({ pagado: !currentStatus })
+                .eq('id', id);
+
+            if (error) {
+                alert('Error al actualizar el estado de pago');
+            } else {
+                if (state.currentPage === 'dashboard') loadDashboard();
+                if (state.currentPage === 'calendar') loadCalendar();
+                if (state.currentPage === 'finance') loadFinance();
+            }
+        }
+
+        async function loadFinance() {
+            let start, end;
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const monthsShort = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+            if (state.financeMode === 'week') {
+                start = getStartOfWeek(state.financeDate);
+                end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                document.getElementById('finance-period-label').innerText = `Semana ${start.getDate()} ${monthsShort[start.getMonth()]} - ${end.getDate()} ${monthsShort[end.getMonth()]}`;
+            } else {
+                start = new Date(state.financeDate.getFullYear(), state.financeDate.getMonth(), 1);
+                end = new Date(state.financeDate.getFullYear(), state.financeDate.getMonth() + 1, 0);
+                document.getElementById('finance-period-label').innerText = `${months[start.getMonth()]} ${start.getFullYear()}`;
+            }
+
+            const { data: financeData } = await _supabase
+                .from('clases')
+                .select('*, alumnos(nombre, avatar_url)')
+                .gte('fecha', start.toLocaleDateString('en-CA'))
+                .lte('fecha', end.toLocaleDateString('en-CA'));
+
+            let totalPaid = 0;
+            let totalPending = 0;
+            const studentEarns = {};
+
+            if (financeData) {
+                financeData.forEach(c => {
+                    const amount = parseFloat(c.price || c.precio || 0);
+                    if (c.pagado) totalPaid += amount;
+                    else totalPending += amount;
+
+                    const studentName = c.alumnos?.nombre || 'Desconocido';
+                    if (!studentEarns[studentName]) {
+                        studentEarns[studentName] = { paid: 0, pending: 0, avatar: c.alumnos?.avatar_url };
+                    }
+                    if (c.pagado) studentEarns[studentName].paid += amount;
+                    else studentEarns[studentName].pending += amount;
+                });
+            }
+
+            document.getElementById('finance-total-paid').innerText = totalPaid.toFixed(2) + '€';
+            document.getElementById('finance-total-pending').innerText = totalPending.toFixed(2) + '€';
+
+            const list = document.getElementById('finance-student-list');
+            const students = Object.keys(studentEarns).sort();
+
+            list.innerHTML = students.map(name => {
+                const data = studentEarns[name];
+                return `
+                    <div class="bg-white p-4 rounded-xl border border-primary/5 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full border border-primary/10 bg-cover bg-center" style="background-image: url('${data.avatar || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'}')"></div>
+                            <div>
+                                <p class="font-bold text-[#1b110e] text-sm">${name}</p>
+                                <p class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Acumulado</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-extrabold text-[#1b110e]">${(data.paid + data.pending).toFixed(2)}€</p>
+                            <p class="text-[10px] ${data.pending > 0 ? 'text-primary' : 'text-green-600'} font-bold">
+                                ${data.pending > 0 ? `Pendiente: ${data.pending.toFixed(2)}€` : 'Todo pagado'}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            `).join('') || '<p class="text-center py-8 text-gray-400">Sin clases para hoy</p>';
+                `;
+            }).join('') || '<p class="text-center py-8 text-gray-400">Sin ingresos registrados esta semana</p>';
         }
 
         async function loadClubs() {
@@ -556,7 +1156,7 @@
             selectClub.innerHTML = clubs.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
 
             // Set default date to today
-            document.getElementById('class-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('class-date').value = new Date().toLocaleDateString('en-CA');
 
             openModal('add-class-modal');
         }
@@ -564,10 +1164,11 @@
         async function saveStudent() {
             const nombre = document.getElementById('new-student-name').value;
             const nivel = document.getElementById('new-student-level').value;
+            const telefono = document.getElementById('new-student-phone').value;
 
             if (!nombre) return alert('Nombre es obligatorio');
 
-            const { error } = await _supabase.from('alumnos').insert([{ nombre, nivel }]);
+            const { error } = await _supabase.from('alumnos').insert([{ nombre, nivel, telefono }]);
 
             if (error) {
                 alert('Error guardando alumno');
@@ -602,6 +1203,7 @@
             const type = document.getElementById('class-type').value;
             const court = document.getElementById('class-court').value;
             const clubId = document.getElementById('class-club-id').value;
+            const price = document.getElementById('class-price').value;
 
             if (!studentId || !date || !start || !end) return alert('Todos los campos son obligatorios');
 
@@ -612,7 +1214,8 @@
                 hora_fin: end,
                 tipo: type,
                 pista: court,
-                club_id: clubId
+                club_id: clubId,
+                precio: price ? parseFloat(price) : null
             }]);
 
             if (error) {
@@ -637,6 +1240,58 @@
 
         // Initial Load
         loadDashboard();
+
+        // Utilities
+        async function deleteClass(id) {
+            if (!confirm('¿Estás seguro de que quieres cancelar esta clase?')) return;
+
+            const { error } = await _supabase
+                .from('clases')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert('Error al cancelar la clase');
+            } else {
+                if (state.currentPage === 'dashboard') loadDashboard();
+                if (state.currentPage === 'calendar') loadCalendar();
+            }
+        }
+
+        function sendWhatsApp(phone, message = 'Hola! Te escribo desde Tennis Coach Pro.') {
+            if (!phone) return alert('El alumno no tiene teléfono registrado');
+            const cleanPhone = phone.replace(/\D/g, '');
+            const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function setFinanceMode(mode) {
+            state.financeMode = mode;
+            const btnWeek = document.getElementById('mode-week');
+            const btnMonth = document.getElementById('mode-month');
+
+            if (mode === 'week') {
+                btnWeek.classList.add('bg-white', 'shadow-sm', 'text-primary');
+                btnWeek.classList.remove('text-gray-500');
+                btnMonth.classList.remove('bg-white', 'shadow-sm', 'text-primary');
+                btnMonth.classList.add('text-gray-500');
+            } else {
+                btnMonth.classList.add('bg-white', 'shadow-sm', 'text-primary');
+                btnMonth.classList.remove('text-gray-500');
+                btnWeek.classList.remove('bg-white', 'shadow-sm', 'text-primary');
+                btnWeek.classList.add('text-gray-500');
+            }
+            loadFinance();
+        }
+
+        function changeFinancePeriod(delta) {
+            if (state.financeMode === 'week') {
+                state.financeDate.setDate(state.financeDate.getDate() + (delta * 7));
+            } else {
+                state.financeDate.setMonth(state.financeDate.getMonth() + delta);
+            }
+            loadFinance();
+        }
     </script>
 </body>
 
