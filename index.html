@@ -605,7 +605,8 @@
     <!-- Modal Añadir Alumno -->
     <div id="add-student-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <h3 class="text-xl font-bold mb-4">Añadir Alumno</h3>
+            <h3 class="text-xl font-bold mb-4" id="student-modal-title">Añadir Alumno</h3>
+            <input type="hidden" id="edit-student-id" />
             <div class="space-y-4">
                 <input id="new-student-name" type="text" placeholder="Nombre completo"
                     class="w-full border-gray-200 rounded-xl px-4 py-3" />
@@ -682,7 +683,8 @@
     <!-- Modal Añadir Club -->
     <div id="add-club-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <h3 class="text-xl font-bold mb-4">Añadir Club</h3>
+            <h3 class="text-xl font-bold mb-4" id="club-modal-title">Añadir Club</h3>
+            <input type="hidden" id="edit-club-id" />
             <div class="space-y-4">
                 <input id="new-club-name" type="text" placeholder="Nombre del club"
                     class="w-full border-gray-200 rounded-xl px-4 py-3" />
@@ -891,6 +893,9 @@
                                     <span class="material-symbols-outlined text-xl">call</span>
                                 </a>
                             ` : ''}
+                            <button onclick="openEditStudentModal('${s.id}')" class="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-600 hover:text-white transition-colors" title="Editar Alumno">
+                                <span class="material-symbols-outlined text-xl">edit</span>
+                            </button>
                             <button onclick="deleteStudent('${s.id}', '${s.nombre}')" class="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-600 hover:text-white transition-colors" title="Eliminar Alumno">
                                 <span class="material-symbols-outlined text-xl">delete</span>
                             </button>
@@ -1140,6 +1145,9 @@
                         <p class="text-xs text-gray-400">${c.direccion || 'Sin dirección'}</p>
                     </div>
                     <div class="flex gap-1">
+                        <button onclick="openEditClubModal('${c.id}')" class="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-600 hover:text-white transition-colors" title="Editar Club">
+                            <span class="material-symbols-outlined">edit</span>
+                        </button>
                         <button onclick="deleteClub('${c.id}', '${c.nombre}')" class="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-600 hover:text-white transition-colors" title="Eliminar Club">
                             <span class="material-symbols-outlined">delete</span>
                         </button>
@@ -1150,10 +1158,47 @@
 
         // Modal Logic
         function openModal(id) {
+            // Reset forms if it's adding
+            if (id === 'add-student-modal' && !document.getElementById('edit-student-id').value) {
+                document.getElementById('student-modal-title').innerText = 'Añadir Alumno';
+                document.getElementById('new-student-name').value = '';
+                document.getElementById('new-student-level').value = '';
+                document.getElementById('new-student-phone').value = '';
+            }
+            if (id === 'add-club-modal' && !document.getElementById('edit-club-id').value) {
+                document.getElementById('club-modal-title').innerText = 'Añadir Club';
+                document.getElementById('new-club-name').value = '';
+                document.getElementById('new-club-address').value = '';
+            }
             document.getElementById(id).classList.remove('hidden');
         }
         function closeModal(id) {
+            if (id === 'add-student-modal') document.getElementById('edit-student-id').value = '';
+            if (id === 'add-club-modal') document.getElementById('edit-club-id').value = '';
             document.getElementById(id).classList.add('hidden');
+        }
+
+        async function openEditStudentModal(id) {
+            const { data: student } = await _supabase.from('alumnos').select('*').eq('id', id).single();
+            if (student) {
+                document.getElementById('edit-student-id').value = student.id;
+                document.getElementById('student-modal-title').innerText = 'Editar Alumno';
+                document.getElementById('new-student-name').value = student.nombre;
+                document.getElementById('new-student-level').value = student.nivel || '';
+                document.getElementById('new-student-phone').value = student.telefono || '';
+                openModal('add-student-modal');
+            }
+        }
+
+        async function openEditClubModal(id) {
+            const { data: club } = await _supabase.from('clubes').select('*').eq('id', id).single();
+            if (club) {
+                document.getElementById('edit-club-id').value = club.id;
+                document.getElementById('club-modal-title').innerText = 'Editar Club';
+                document.getElementById('new-club-name').value = club.nombre;
+                document.getElementById('new-club-address').value = club.direccion || '';
+                openModal('add-club-modal');
+            }
         }
 
         async function openAddClassModal() {
@@ -1173,16 +1218,22 @@
         }
 
         async function saveStudent() {
+            const id = document.getElementById('edit-student-id').value;
             const nombre = document.getElementById('new-student-name').value;
             const nivel = document.getElementById('new-student-level').value;
             const telefono = document.getElementById('new-student-phone').value;
 
             if (!nombre) return alert('Nombre es obligatorio');
 
-            const { error } = await _supabase.from('alumnos').insert([{ nombre, nivel, telefono }]);
+            let result;
+            if (id) {
+                result = await _supabase.from('alumnos').update({ nombre, nivel, telefono }).eq('id', id);
+            } else {
+                result = await _supabase.from('alumnos').insert([{ nombre, nivel, telefono }]);
+            }
 
-            if (error) {
-                alert('Error guardando alumno');
+            if (result.error) {
+                alert('Error guardando alumno: ' + result.error.message);
             } else {
                 closeModal('add-student-modal');
                 if (state.currentPage === 'students') loadStudents();
@@ -1191,15 +1242,21 @@
         }
 
         async function saveClub() {
+            const id = document.getElementById('edit-club-id').value;
             const nombre = document.getElementById('new-club-name').value;
             const direccion = document.getElementById('new-club-address').value;
 
             if (!nombre) return alert('Nombre del club es obligatorio');
 
-            const { error } = await _supabase.from('clubes').insert([{ nombre, direccion }]);
+            let result;
+            if (id) {
+                result = await _supabase.from('clubes').update({ nombre, direccion }).eq('id', id);
+            } else {
+                result = await _supabase.from('clubes').insert([{ nombre, direccion }]);
+            }
 
-            if (error) {
-                alert('Error guardando club');
+            if (result.error) {
+                alert('Error guardando club: ' + result.error.message);
             } else {
                 closeModal('add-club-modal');
                 if (state.currentPage === 'clubs') loadClubs();
@@ -1334,7 +1391,13 @@
         function sendWhatsApp(phone, message = 'Hola! Te escribo desde Tennis Coach Pro.') {
             if (!phone) return alert('El alumno no tiene teléfono registrado');
             const cleanPhone = phone.replace(/\D/g, '');
-            const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+
+            // Detect if mobile to use wa.me, otherwise use web.whatsapp.com to avoid app prompt
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const url = isMobile
+                ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
+                : `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+
             window.open(url, '_blank');
         }
 
