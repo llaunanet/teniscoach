@@ -1139,11 +1139,13 @@
                         <h3 class="font-bold text-[#1b110e]">${c.nombre}</h3>
                         <p class="text-xs text-gray-400">${c.direccion || 'Sin dirección'}</p>
                     </div>
-                    <button class="p-2 text-gray-400">
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
+                    <div class="flex gap-1">
+                        <button onclick="deleteClub('${c.id}', '${c.nombre}')" class="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-600 hover:text-white transition-colors" title="Eliminar Club">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
+                    </div>
                 </div>
-            `).join('') || '<p class="text-center py-8 text-gray-400">No has añadido clubs todavía</p>';
+            `).join('') || '<p class="text-center py-8 text-gray-400 col-span-full">No has añadido clubs todavía</p>';
         }
 
         // Modal Logic
@@ -1281,6 +1283,34 @@
                 loadStudents();
                 if (state.currentPage === 'dashboard') loadDashboard();
                 if (state.currentPage === 'finance') loadFinance();
+            }
+        }
+
+        async function deleteClub(id, name) {
+            if (!confirm(`¿Estás seguro de que quieres eliminar el club ${name}? Esta acción desvinculará el club de todas las clases programadas.`)) return;
+
+            // Set club_id to null in classes instead of deleting classes
+            const { error: classesError } = await _supabase
+                .from('clases')
+                .update({ club_id: null })
+                .eq('club_id', id);
+
+            if (classesError) {
+                alert('Error al desvincular clases del club: ' + classesError.message);
+                return;
+            }
+
+            const { error: clubError } = await _supabase
+                .from('clubes')
+                .delete()
+                .eq('id', id);
+
+            if (clubError) {
+                alert('Error al eliminar el club: ' + clubError.message);
+            } else {
+                loadClubs();
+                if (state.currentPage === 'dashboard') loadDashboard();
+                if (state.currentPage === 'calendar') loadCalendar();
             }
         }
 
