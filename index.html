@@ -854,11 +854,17 @@
             document.getElementById('total-students').innerText = studentCount;
         }
 
-        async function loadStudents() {
-            const { data: students } = await _supabase
+        async function loadStudents(searchQuery = '') {
+            let query = _supabase
                 .from('alumnos')
                 .select('*')
                 .order('nombre');
+
+            if (searchQuery) {
+                query = query.ilike('nombre', `%${searchQuery}%`);
+            }
+
+            const { data: students } = await query;
 
             const list = document.getElementById('students-list');
             list.innerHTML = students?.map(s => `
@@ -878,17 +884,20 @@
                         </div>
                         <div class="flex gap-2">
                             ${s.telefono ? `
-                                <button onclick="sendWhatsApp('${s.telefono}')" class="p-2 text-green-600 bg-green-500/10 rounded-lg hover:bg-green-500 hover:text-white transition-colors">
+                                <button onclick="sendWhatsApp('${s.telefono}')" class="p-2 text-green-600 bg-green-500/10 rounded-lg hover:bg-green-500 hover:text-white transition-colors" title="WhatsApp">
                                     <span class="material-symbols-outlined text-xl">message</span>
                                 </button>
+                                <a href="tel:${s.telefono}" class="p-2 text-primary bg-primary/5 rounded-lg hover:bg-primary hover:text-white transition-colors" title="Llamar">
+                                    <span class="material-symbols-outlined text-xl">call</span>
+                                </a>
                             ` : ''}
-                            <button class="p-2 text-primary bg-primary/5 rounded-lg">
-                                <span class="material-symbols-outlined text-xl">call</span>
+                            <button onclick="deleteStudent('${s.id}', '${s.nombre}')" class="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-600 hover:text-white transition-colors" title="Eliminar Alumno">
+                                <span class="material-symbols-outlined text-xl">delete</span>
                             </button>
                         </div>
                     </div>
                 </div>
-            `).join('') || '';
+            `).join('') || '<p class="text-center py-8 text-gray-400 col-span-full">No se encontraron alumnos</p>';
         }
 
         function getStartOfWeek(date) {
@@ -1241,7 +1250,40 @@
         // Initial Load
         loadDashboard();
 
+        // Search Listener
+        document.getElementById('student-search').addEventListener('input', (e) => {
+            loadStudents(e.target.value);
+        });
+
         // Utilities
+        async function deleteStudent(id, name) {
+            if (!confirm(`¿Estás seguro de que quieres eliminar al alumno ${name}? Esta acción no se puede deshacer y eliminará también su historial de clases.`)) return;
+
+            // Delete classes first because of foreign key constraints
+            const { error: classesError } = await _supabase
+                .from('clases')
+                .delete()
+                .eq('alumno_id', id);
+
+            if (classesError) {
+                alert('Error al eliminar las clases del alumno: ' + classesError.message);
+                return;
+            }
+
+            const { error: studentError } = await _supabase
+                .from('alumnos')
+                .delete()
+                .eq('id', id);
+
+            if (studentError) {
+                alert('Error al eliminar el alumno: ' + studentError.message);
+            } else {
+                loadStudents();
+                if (state.currentPage === 'dashboard') loadDashboard();
+                if (state.currentPage === 'finance') loadFinance();
+            }
+        }
+
         async function deleteClass(id) {
             if (!confirm('¿Estás seguro de que quieres cancelar esta clase?')) return;
 
@@ -1255,6 +1297,7 @@
             } else {
                 if (state.currentPage === 'dashboard') loadDashboard();
                 if (state.currentPage === 'calendar') loadCalendar();
+                if (state.currentPage === 'finance') loadFinance();
             }
         }
 
