@@ -840,8 +840,8 @@
                                 <span class="material-symbols-outlined text-lg">message</span>
                             </button>
                         ` : ''}
-                        <button class="flex items-center justify-center rounded-lg h-9 px-4 ${cls.pagado ? 'bg-green-500' : 'bg-primary'} text-white text-xs font-bold transition-all active:scale-95 shadow-md">
-                            ${cls.pagado ? 'Pagado' : 'Check In'}
+                        <button onclick="togglePaid('${cls.id}', ${cls.pagado})" class="flex items-center justify-center rounded-lg h-9 px-4 ${cls.pagado ? 'bg-green-500' : 'bg-primary'} text-white text-xs font-bold transition-all active:scale-95 shadow-md">
+                            ${cls.pagado ? 'Pagado' : 'Pendiente'}
                         </button>
                     </div>
                 </div>
@@ -888,6 +888,7 @@
             const remindersSection = document.getElementById('reminders-section');
             const remindersList = document.getElementById('reminders-list');
 
+            // Force visibility check for debugging or if there are classes
             if (reminderClasses && reminderClasses.length > 0) {
                 remindersSection.classList.remove('hidden');
                 remindersList.innerHTML = reminderClasses.map(cls => {
@@ -913,7 +914,12 @@
                     `;
                 }).join('');
             } else {
-                remindersSection.classList.add('hidden');
+                remindersSection.classList.remove('hidden'); // Always show the section header
+                remindersList.innerHTML = `
+                    <div class="bg-gray-50 border border-dashed border-gray-200 p-6 rounded-2xl text-center">
+                        <p class="text-gray-400 text-sm">No hay clases pendientes de confirmar para hoy o mañana.</p>
+                    </div>
+                `;
             }
 
             document.getElementById('weekly-income').innerText = totalIncome.toFixed(2) + '€';
@@ -1427,11 +1433,15 @@
                 .in('fecha', [today, tomorrowStr])
                 .eq('recordatorio_enviado', false);
 
-            if (!list || list.length === 0) return;
+            if (!list || list.length === 0) return alert('No hay recordatorios pendientes para hoy o mañana.');
 
-            if (confirm(`Se abrirán ${list.length} pestañas de WhatsApp Web. ¿Continuar?`)) {
-                for (const item of list) {
-                    await sendClassReminder(item.id);
+            if (confirm(`Se abrirán ${list.length} pestañas de WhatsApp Web. ¿Continuar?\nNota: Asegúrate de permitir las ventanas emergentes (pop-ups).`)) {
+                for (let i = 0; i < list.length; i++) {
+                    const item = list[i];
+                    // Open with a slight delay between them to avoid browser blocking multiple tabs
+                    setTimeout(async () => {
+                        await sendClassReminder(item.id);
+                    }, i * 1500);
                 }
             }
         }
