@@ -122,9 +122,9 @@
             grid-template-columns: 60px repeat(7, 1fr);
             border-bottom: 1px solid rgba(216, 72, 24, 0.1);
             background: #fff;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 40 !important;
         }
 
         .calendar-hour-col {
@@ -135,8 +135,8 @@
         .calendar-grid-container {
             display: grid;
             grid-template-columns: 60px repeat(7, 1fr);
-            height: 1200px;
-            /* 15 hours * 80px */
+            height: 1215px;
+            /* Adjusting for sticky header height roughly */
             position: relative;
         }
 
@@ -149,6 +149,11 @@
             font-size: 10px;
             color: #97604e;
             font-weight: 600;
+            position: sticky;
+            left: 0;
+            background: #fff;
+            z-index: 20;
+            border-right: 1px solid rgba(216, 72, 24, 0.05);
         }
 
         .calendar-day-col {
@@ -156,19 +161,47 @@
             position: relative;
         }
 
+        .calendar-day-col::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed rgba(216, 72, 24, 0.03);
+            pointer-events: none;
+        }
+
+        .bg-even-row {
+            background-color: #faf8f7 !important;
+        }
+
         .class-block {
             position: absolute;
-            left: 4px;
-            right: 4px;
+            left: 10px;
+            right: 10px;
             border-radius: 8px;
-            padding: 6px;
+            padding: 8px 6px;
             font-size: 10px;
             overflow: hidden;
             border-left: 3px solid #d84818;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             transition: all 0.2s;
             cursor: pointer;
             z-index: 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: #fff;
+        }
+
+        @media (min-width: 769px) {
+            .class-block {
+                left: 20% !important;
+                right: 20% !important;
+                max-width: 120px !important;
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
 
         .class-block:hover {
@@ -189,22 +222,52 @@
 
         /* Responsive fixes for the calendar grid */
         @media (max-width: 768px) {
+            #calendar-grid-body {
+                overflow: auto !important;
+                display: block;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .calendar-week-header,
+            .calendar-grid-container {
+                width: max-content !important;
+                min-width: 100%;
+                grid-template-columns: 50px repeat(7, 120px) !important;
+            }
+
+            .calendar-hour-col {
+                width: 50px !important;
+                min-width: 50px;
+            }
+
+            .calendar-time-slot {
+                width: 50px !important;
+                z-index: 30;
+                /* Higher than classes, but lower than header */
+            }
+
             .class-block {
-                left: 2px;
-                right: 2px;
-                padding: 2px;
-                font-size: 8px;
+                left: 6px;
+                right: 6px;
+                padding: 6px 4px;
+                font-size: 10px;
+            }
+
+            .class-block .font-bold {
+                white-space: normal;
+                line-height: 1.1;
+                margin-bottom: 2px;
             }
 
             .btn-delete-class {
-                width: 14px;
-                height: 14px;
-                top: 1px;
-                right: 1px;
+                width: 16px;
+                height: 16px;
+                top: 2px;
+                right: 2px;
             }
 
             .btn-delete-class span {
-                font-size: 10px !important;
+                font-size: 12px !important;
             }
         }
 
@@ -456,7 +519,7 @@
                     </div>
                     <h2 id="calendar-title"
                         class="text-[#1b110e] text-lg md:text-3xl font-bold leading-tight tracking-[-0.015em] flex-1 md:text-left text-center">
-                        Calendario</h2>
+                        Calendario <span class="text-[10px] opacity-20 font-normal">v2.1</span></h2>
                     <div class="flex items-center gap-2">
                         <button onclick="openImportScheduleModal()"
                             class="hidden md:flex bg-primary/10 text-primary px-4 py-2 rounded-xl font-bold text-xs hover:bg-primary/20 transition-all items-center gap-2">
@@ -474,14 +537,15 @@
 
                 <main
                     class="flex-1 overflow-hidden flex flex-col bg-white md:rounded-3xl shadow-sm border border-primary/5 mx-0 md:mx-0">
-                    <!-- Days Header -->
-                    <div id="calendar-week-header" class="calendar-week-header shrink-0">
-                        <div class="calendar-hour-col"></div>
-                        <!-- Days dynamically injected -->
-                    </div>
 
-                    <!-- Grid Body -->
-                    <div class="flex-1 overflow-y-auto no-scrollbar relative bg-white" id="calendar-grid-body">
+                    <!-- Unified Scrollable Area -->
+                    <div class="flex-1 overflow-auto no-scrollbar relative bg-white" id="calendar-grid-body">
+                        <!-- Days Header (Inside scroll for vertical stickiness + horizontal sync) -->
+                        <div id="calendar-week-header" class="calendar-week-header sticky top-0 z-40 bg-white">
+                            <div class="calendar-hour-col sticky left-0 bg-white z-40 border-r border-primary/5"></div>
+                            <!-- Days dynamically injected -->
+                        </div>
+
                         <div id="calendar-grid-content" class="calendar-grid-container">
                             <!-- Hours and Slots dynamically injected -->
                         </div>
@@ -1690,12 +1754,12 @@
 
             const header = document.getElementById('calendar-week-header');
             const days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-            header.innerHTML = '<div class="calendar-hour-col"></div>' + days.map((day, i) => {
+            header.innerHTML = '<div class="calendar-hour-col sticky left-0 bg-white z-50 border-r border-primary/5"></div>' + days.map((day, i) => {
                 const d = new Date(weekStart);
                 d.setDate(weekStart.getDate() + i);
                 const isToday = d.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
                 return `
-                    <div class="flex flex-col items-center py-2 ${isToday ? 'bg-primary/5' : ''}">
+                    <div class="flex flex-col items-center py-2 bg-white ${isToday ? 'bg-primary/5' : ''}">
                         <span class="text-[10px] font-bold text-gray-400">${day}</span>
                         <span class="text-xs font-bold ${isToday ? 'text-primary' : 'text-[#1b110e]'}">${d.getDate()}</span>
                     </div>
@@ -1715,10 +1779,13 @@
             let slotsHtml = '';
             for (let h = startHour; h <= endHour; h++) {
                 const rowIndex = h - startHour + 1;
-                slotsHtml += `<div class="calendar-time-slot" style="grid-row: ${rowIndex}">${h}:00</div>`;
+                const isEven = h % 2 === 0;
+                const rowClass = isEven ? 'bg-even-row' : '';
+
+                slotsHtml += `<div class="calendar-time-slot ${rowClass}" style="grid-row: ${rowIndex}">${h}:00</div>`;
                 for (let d = 0; d < 7; d++) {
                     const colIndex = d + 2;
-                    slotsHtml += `<div class="calendar-day-col" id="col-${d}-hour-${h}" style="grid-row: ${rowIndex}; grid-column: ${colIndex}"></div>`;
+                    slotsHtml += `<div class="calendar-day-col ${rowClass}" id="col-${d}-hour-${h}" style="grid-row: ${rowIndex}; grid-column: ${colIndex}"></div>`;
                 }
             }
             gridContent.innerHTML = slotsHtml;
@@ -1764,23 +1831,41 @@
                     block.style.height = `${height}px`;
                     block.style.zIndex = "20";
 
+                    const clubName = cls.clubes?.nombre || '';
+                    const clubColor = clubName ? `hsl(${Array.from(clubName).reduce((a, b) => a + b.charCodeAt(0), 0) % 360}, 75%, 55%)` : '#94a3b8';
+
                     block.innerHTML = `
-                        <div class="absolute top-1 right-1 flex gap-1">
-                            <button class="w-6 h-6 flex items-center justify-center rounded-full bg-white/80 text-blue-600 shadow-sm hover:bg-white transition-all" onclick="event.stopPropagation(); openEditClassModal('${cls.id}')" title="Editar clase">
-                                <span class="material-symbols-outlined text-[14px]">edit</span>
+                        <!-- Action buttons -->
+                        <div class="absolute top-1 right-1 flex gap-0.5 z-10">
+                            <button class="w-4 h-4 flex items-center justify-center rounded-full bg-white shadow-sm text-blue-600 hover:bg-blue-50 transition-all" onclick="event.stopPropagation(); openEditClassModal('${cls.id}')">
+                                <span class="material-symbols-outlined text-[10px]">edit</span>
                             </button>
-                            <button class="w-6 h-6 flex items-center justify-center rounded-full bg-white/80 text-red-600 shadow-sm hover:bg-white transition-all" onclick="event.stopPropagation(); deleteClass('${cls.id}')" title="Cancelar clase">
-                                <span class="material-symbols-outlined text-[14px]">close</span>
+                            <button class="w-4 h-4 flex items-center justify-center rounded-full bg-white shadow-sm text-red-600 hover:bg-red-50 transition-all" onclick="event.stopPropagation(); deleteClass('${cls.id}')">
+                                <span class="material-symbols-outlined text-[10px]">close</span>
                             </button>
                         </div>
-                        <div class="font-bold truncate pr-6">${cls.alumnos.nombre}</div>
-                        <div class="opacity-70 truncate text-[10px]">${cls.hora_inicio.substring(0, 5)} - ${cls.clubes?.nombre || ''}</div>
-                        <div class="font-bold mt-1 text-primary">${cls.precio ? cls.precio + '€' : ''}</div>
-                        <div class="absolute bottom-2 right-2 flex gap-1">
-                            ${cls.alumnos.telefono ? `<span onclick="event.stopPropagation(); sendWhatsApp('${cls.alumnos.telefono}')" class="material-symbols-outlined text-[14px] text-green-600 cursor-pointer hover:scale-125 transition-transform" title="Enviar WhatsApp">message</span>` : ''}
+
+                        <!-- Content centered vertically -->
+                        <div class="flex flex-col items-center text-center w-full px-1">
+                            <div class="flex items-center justify-center gap-1.5 mb-1 w-full">
+                                <div class="w-2 h-2 rounded-full shrink-0 shadow-inner border border-white/50" style="background-color: ${clubColor}" title="${clubName}"></div>
+                                <div class="font-bold truncate text-[10px] text-gray-800">${cls.alumnos.nombre}</div>
+                            </div>
+                            
+                            <div class="flex items-center justify-center gap-0.5 text-[8px] font-bold text-gray-500 uppercase tracking-tighter">
+                                <span>${cls.hora_inicio.substring(0, 5)}</span>
+                                <span class="opacity-30">-</span>
+                                <span>${cls.hora_fin.substring(0, 5)}</span>
+                            </div>
+
+                            <div class="font-black text-primary text-[10px] mt-0.5">${cls.precio ? cls.precio + '€' : ''}</div>
+                        </div>
+
+                        <!-- Status icons -->
+                        <div class="absolute bottom-1 right-1 flex gap-1 items-center">
+                            ${cls.alumnos.telefono ? `<span onclick="event.stopPropagation(); sendWhatsApp('${cls.alumnos.telefono}')" class="material-symbols-outlined text-xs text-green-600 cursor-pointer hover:scale-110" title="WhatsApp">message</span>` : ''}
                             <span onclick="event.stopPropagation(); togglePaid('${cls.id}', ${cls.pagado})" 
-                                  class="material-symbols-outlined text-[14px] ${cls.pagado ? 'text-green-600 font-fill-1' : 'text-gray-300 hover:text-green-400'} cursor-pointer transition-all hover:scale-125" 
-                                  title="${cls.pagado ? 'Marcar como pendiente' : 'Marcar como pagado'}">
+                                  class="material-symbols-outlined text-xs ${cls.pagado ? 'text-green-600 font-fill-1' : 'text-gray-300 hover:text-green-400'} cursor-pointer transition-all hover:scale-110">
                                 check_circle
                             </span>
                         </div>
@@ -2605,20 +2690,24 @@
 
                 const slotEl = document.createElement('div');
                 slotEl.className = 'group relative p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:border-primary/20 transition-all';
+                const clubName = slot.clubes?.nombre || '';
+                const clubColor = clubName ? `hsl(${Array.from(clubName).reduce((a, b) => a + b.charCodeAt(0), 0) % 360}, 75%, 55%)` : '#94a3b8';
+
                 slotEl.innerHTML = `
                     <div class="flex justify-between items-start">
-                        <div>
+                        <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-1.5 mb-1">
-                                <p class="text-xs font-black text-[#1b110e]">${slot.alumnos?.nombre || 'Consulting'}</p>
-                                <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${slot.tipo === 'Particular' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}">${slot.tipo}</span>
+                                <div class="w-2 h-2 rounded-full shrink-0" style="background-color: ${clubColor}" title="${clubName}"></div>
+                                <p class="text-xs font-black text-[#1b110e] truncate">${slot.alumnos?.nombre || 'Particular'}</p>
+                                <span class="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase ${slot.tipo === 'Particular' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}">${slot.tipo}</span>
                             </div>
-                            <p class="text-[10px] text-gray-400 font-bold">${slot.hora_inicio.substring(0, 5)} - ${slot.hora_fin.substring(0, 5)}</p>
-                            <div class="flex items-center justify-between mt-1 gap-2">
-                                <p class="text-[9px] text-primary/70 font-bold uppercase">${slot.clubes?.nombre || 'Sin Club'}</p>
-                                <p class="text-[10px] font-black text-[#1b110e]">${slot.precio}€</p>
+                            <div class="flex items-center gap-1 text-[10px] text-gray-500 font-bold mb-1">
+                                <span class="material-symbols-outlined text-xs">schedule</span>
+                                ${slot.hora_inicio.substring(0, 5)} - ${slot.hora_fin.substring(0, 5)}
                             </div>
+                            <p class="text-[10px] font-black text-primary">${slot.precio}€</p>
                         </div>
-                        <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all shrink-0">
                             <button onclick="openEditWeeklySlotModal('${slot.id}')" class="p-1 text-blue-400 hover:text-blue-500">
                                 <span class="material-symbols-outlined text-sm">edit</span>
                             </button>

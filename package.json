@@ -4,8 +4,8 @@
   "description": "Sistema de gestión para profesores de tenis",
   "main": "index.html",
   "scripts": {
-    "dev": "python -m http.server 8080",
-    "serve": "python -m http.server 8080"
+    "dev": "python -m http.server 8080 --bind 0.0.0.0",
+    "serve": "python -m http.server 8080 --bind 0.0.0.0"
   },
   "keywords": [],
   "author": "",
